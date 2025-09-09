@@ -6,13 +6,13 @@ const routes = [
         path: '/login',
         name: 'Login',
         component: UserLogin,
-        meta: { layout: 'guest' }
+        meta: { layout: 'guest', requiresAuth: false },
     },
     {
         path: '/register',
         name: 'Register',
         component: UserRegistration,
-        meta: { layout: 'guest' },
+        meta: { layout: 'guest', requiresAuth: false },
     },
 ]
 export default routes;

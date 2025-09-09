@@ -1,9 +1,17 @@
 <template>
-  <div>
-    <router-view/>
+  <div class="flex flex-col">
+      <PageHeader />
+
+    <main class="flex-grow">
+    </main>
+
+    <footer>
+      <PageFooter />
+    </footer>
   </div>
 </template>
 
 <script setup>
-
+import PageHeader from '@/components/pageHeader.vue'
+import PageFooter from '@/components/pageFooter.vue'
 </script>

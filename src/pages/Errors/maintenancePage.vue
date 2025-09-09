@@ -1,5 +1,5 @@
 <template>
-    <div class="flex items-center justify-center h-full flex-col text-center">
+    <div class="flex items-center justify-center flex-col text-center">
       <div>
         <h1 class="text-6xl font-bold mb-6">Seite im Aufbau</h1>
         <p class="text-xl text-gray-800 mb-4">

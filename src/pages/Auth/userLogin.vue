@@ -1,6 +1,6 @@
 <template>
-  <div class="flex items-center h-screen justify-center  w-full">
-    <div class="flex justify-center">
+  <div class="">
+    <div class="flex justify-center items-center">
       <form @submit.prevent="handleLogin" class="border m-4 p-4 flex flex-col justify-center">
         <div class="grid grid-cols-1">
           <div class="text-2xl mb-3">Login</div>
@@ -20,7 +20,9 @@
             {{ authStore.errors.password[0] }}
           </div>
         </div>
-
+        <div v-if="authStore.errors.length > 1" class="text-red-600 text-sm mb-3 mt-1">
+          {{ authStore.errors }}
+        </div>
         <button type="submit" class="border hover:bg-gray-600">Anmelden</button>
       </form>
     </div>

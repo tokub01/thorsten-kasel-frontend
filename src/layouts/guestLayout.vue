@@ -1,8 +1,6 @@
 <template>
-  <div class="bg-gray-400 flex flex-col h-screen">
-    <header>
+  <div class="flex flex-col">
       <PageHeader />
-    </header>
 
     <main class="flex-grow">
       <router-view />

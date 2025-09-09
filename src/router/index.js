@@ -5,6 +5,8 @@ import Landing from './Landing'
 import MaintenancePage from '@/pages/Errors/maintenancePage.vue'
 import PageDataPrivacy from "@/pages/DataPrivacy/pageDataPrivacy.vue";
 import PageImprint from "@/pages/Imprint/pageImprint.vue";
+import Works from './Works'
+import Biography from "./Biography";
 function isAuthenticated() {
     return !!localStorage.getItem('authToken');
 }
@@ -27,6 +29,8 @@ const router = createRouter({
             name: 'MaintenancePage',
             component: MaintenancePage,
         },
+        ...Works,
+        ...Biography,
         ...Landing,
         ...Home,
         ...Auth,

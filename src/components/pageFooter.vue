@@ -1,5 +1,5 @@
 <template>
-  <div class="p-8 mt-12 text-sm border-t">
+  <div v-if="route.meta.requiresAuth === false" class="p-8 mt-12 text-sm border-t">
     <div class="mx-auto flex flex-col md:flex-row md:justify-between gap-8">
       <!-- Rechtliches -->
       <div class="space-y-2">
@@ -14,5 +14,10 @@
     </div>
   </div>
 </template>
-<script setup lang="ts">
+<script setup >
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+
+
 </script>
