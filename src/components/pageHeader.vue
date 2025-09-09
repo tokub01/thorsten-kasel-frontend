@@ -64,10 +64,10 @@
     >
       <div class="text-center w-full">
         <div class="w-full border-b w-full">
-          <router-link to="/arbeiten" class="hover:underline ">Arbeiten</router-link>
+          <router-link to="/categories" class="hover:underline ">Kategorien</router-link>
         </div>
         <div class="w-full border-b">
-          <router-link to="/biographie" class="hover:underline">Biographie</router-link>
+          <router-link to="/products" class="hover:underline">Bilder</router-link>
         </div>
       </div>
       <div class="xl:flex xl:items-end">
