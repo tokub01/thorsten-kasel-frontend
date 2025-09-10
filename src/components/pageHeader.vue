@@ -71,10 +71,10 @@
         </div>
       </div>
       <div class="xl:flex xl:items-end">
-        <router-link class="hover:underline">Logout</router-link>
+        <button @click="handleLogout" class="hover:underline">Logout</button>
       </div>
     </div>
-    <div class="lg:ml-60">
+    <div class="md:ml-60">
       <router-view/>
     </div>
 
@@ -123,11 +123,19 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/Auth'
+const authStore = useAuthStore()
 
 const isOpen = ref(false)
 
 const route = useRoute();
-
+async function handleLogout() {
+  try {
+    authStore.logout()
+  } catch (error) {
+    console.log(error)
+  }
+}
 function toggleMenu() {
   isOpen.value = !isOpen.value
 }

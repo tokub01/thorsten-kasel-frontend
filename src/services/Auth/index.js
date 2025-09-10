@@ -35,23 +35,13 @@ export async function register(email, name, password, password_confirmation) {
 
 export async function logout() {
     try {
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
-            throw new Error("Kein Token gefunden, User ist wahrscheinlich schon ausgeloggt");
-        }
+        await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
         const response = await API.post(
-            `${process.env.VUE_APP_API_URL}/api/auth/logout`,
-            {},
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            }
+            `${process.env.VUE_APP_API_URL}/api/auth/logout`, {},{headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }}
         );
-
-        localStorage.removeItem('authToken');
 
         return response.data;
     } catch (error) {

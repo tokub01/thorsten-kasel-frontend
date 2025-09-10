@@ -1,4 +1,4 @@
-import API from "./API";
+import API from "../API";
 
 export async function index() {
     try {
@@ -26,16 +26,16 @@ export async function show(product_id) {
     }
 }
 
-export async function store(product_title, product_description, product_image, category_id) {
+export async function store(formData) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
         const response = await API.post(`${process.env.VUE_APP_API_URL}/api/products`, {
-            title: product_title,
-            description: product_description,
-            image: product_image,
-            price: 0.00,
-            category_id: category_id
+            'title': formData.get('title'),
+            'description':formData.get('description'),
+            'image': formData.get('image'),
+            'price': 0.00,
+            'category_id': formData.get('category_id'),
         });
 
         return response.data;

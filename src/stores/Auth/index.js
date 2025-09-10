@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { login, register, logout } from '@/services/Auth';
+import { login, register } from '@/services/Auth';
 import router from '@/router'
 
 export const useAuthStore = defineStore('user', {
@@ -52,18 +52,11 @@ export const useAuthStore = defineStore('user', {
             this.loading = true;
             this.errors = [];
             try {
-                this.user = await logout(this.user.id);
-                this.user = null
                 localStorage.removeItem('authToken');
-                router.push({ name: 'login' });
-            } catch (error) {
-                if (error.response?.status === 422) {
-                    this.errors = error.response.data.errors;
-                }
-
-                if (error.response?.status === 401) {
-                    this.errors = error.response.data.message;
-                }
+                router.push({ name: 'Login' });
+                this.user = null
+            } catch (e) {
+                console.log(e);
             } finally {
                 this.loading = false;
             }

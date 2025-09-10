@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { index, show, store, update, destroy } from '@/services/Users';
 
-export const userStore = defineStore('users', {
+export const useUserStore = defineStore('users', {
     state: () => ({
         errors: [],
         users: null,

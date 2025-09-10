@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { index, show, store, update, destroy } from '@/services/Products';
 
-export const productStore = defineStore('products', {
+export const useProductStore = defineStore('products', {
     state: () => ({
         errors: [],
         products: null,
@@ -36,11 +36,11 @@ export const productStore = defineStore('products', {
                 this.loading = false;
             }
         },
-        async storeProduct(product_title, product_description, product_image, category_id) {
+        async storeProduct(formData) {
             this.loading = true;
             this.errors = [];
             try {
-                this.products = await store(product_title, product_description, product_image, category_id);
+                this.products = await store(formData);
             } catch (error) {
                 if (error.response?.status === 422) {
                     this.errors = error.response.data.errors;
@@ -49,11 +49,11 @@ export const productStore = defineStore('products', {
                 this.loading = false;
             }
         },
-        async updateProduct(product_title, product_description, product_image, category_id) {
+        async updateProduct(formData) {
             this.loading = true;
             this.errors = [];
             try {
-                this.products = await update(product_title, product_description, product_image, category_id);
+                this.products = await update(formData);
             } catch (error) {
                 if (error.response?.status === 422) {
                     this.errors = error.response.data.errors;

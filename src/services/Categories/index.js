@@ -5,7 +5,7 @@ export async function index() {
 
         const response = await API.get(`${process.env.VUE_APP_API_URL}/api/categories`);
 
-        return response.data;
+        return response.data.data;
     } catch (error) {
         console.error("Laden der Kategorien fehlgeschlagen.", error);
         throw error;
@@ -28,7 +28,7 @@ export async function store(category_name){
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
         const response = await API.post(`${process.env.VUE_APP_API_URL}/api/categories`, {
             name: category_name,
-        });
+        }, );
         return response.data;
     }catch(error){
         console.error("Speichern der Kategorie fehlgeschlagen", error);
@@ -43,7 +43,7 @@ export async function update(category_id, category_name){
             _method: "PUT",
             name: category_name,
         });
-        return response.data;
+        return response.data.data;
     }catch(error){
         console.error("Aktualisieren der Kategorie fehlgeschlagen", error);
         throw error;

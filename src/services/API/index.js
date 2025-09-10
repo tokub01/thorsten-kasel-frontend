@@ -4,7 +4,7 @@ import router from '@/router';
 const axiosInstance = axios.create({
     baseURL: process.env.VUE_APP_API_URL + "/api",
     timeout: 1000,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'multipart/form-data',  Authorization: `Bearer ${localStorage.getItem('authToken')}` },
     withCredentials: true,
 });
 

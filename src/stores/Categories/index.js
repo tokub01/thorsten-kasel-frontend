@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { index, show, store, update, destroy } from '@/services/Categories';
 
-export const categoryStore = defineStore('categories', {
+export const useCategoryStore = defineStore('categories', {
     state: () => ({
         errors: [],
         categories: null,
