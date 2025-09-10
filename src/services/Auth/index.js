@@ -35,17 +35,15 @@ export async function register(email, name, password, password_confirmation) {
 
 export async function logout() {
     try {
-        // Token aus localStorage holen
         const token = localStorage.getItem('authToken');
 
         if (!token) {
             throw new Error("Kein Token gefunden, User ist wahrscheinlich schon ausgeloggt");
         }
 
-        // Logout-Anfrage mit Bearer Token im Header
         const response = await API.post(
             `${process.env.VUE_APP_API_URL}/api/auth/logout`,
-            {}, // falls der Logout-Endpunkt keine Body-Daten braucht
+            {},
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -53,7 +51,6 @@ export async function logout() {
             }
         );
 
-        // Token aus localStorage löschen
         localStorage.removeItem('authToken');
 
         return response.data;
