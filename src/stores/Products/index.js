@@ -10,11 +10,11 @@ export const useProductStore = defineStore('products', {
     }),
 
     actions: {
-        async loadAllProducts() {
+        async loadAllProducts(keyword, category, sort) {
             this.loading = true;
             this.errors = [];
             try {
-                this.products = await index();
+                this.products = await index(keyword, category, sort);
             } catch (error) {
                 if (error.response?.status === 422) {
                     this.errors = error.response.data.errors;

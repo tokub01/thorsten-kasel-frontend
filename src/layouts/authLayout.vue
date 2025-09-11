@@ -1,6 +1,10 @@
 <template>
   <div class="flex flex-col">
-      <PageHeader />
+    <PageHeader>
+      <div class="md:ml-60">
+        <router-view/>
+      </div>
+    </PageHeader>
 
     <main class="flex-grow">
     </main>

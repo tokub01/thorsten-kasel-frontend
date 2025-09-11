@@ -1,10 +1,10 @@
 import API from "../API";
 
-export async function index() {
+export async function index(keyword, category, sort) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
-        const response = await API.get(`${process.env.VUE_APP_API_URL}/api/products`);
+        const response = await API.get(`${process.env.VUE_APP_API_URL}/api/products?keyword=${keyword}&category=${category}&sort=${sort}`);
 
         return response.data;
     } catch (error) {

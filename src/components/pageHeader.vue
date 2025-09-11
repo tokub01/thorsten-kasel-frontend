@@ -69,13 +69,13 @@
         <div class="w-full border-b">
           <router-link to="/products" class="hover:underline">Bilder</router-link>
         </div>
+        <div class="w-full border-b">
+          <router-link to="/adminBiography" class="hover:underline">Biographie</router-link>
+        </div>
       </div>
       <div class="xl:flex xl:items-end">
         <button @click="handleLogout" class="hover:underline">Logout</button>
       </div>
-    </div>
-    <div class="md:ml-60">
-      <router-view/>
     </div>
 
     <!-- 🔓 Desktop: Kein Menü wenn nicht eingeloggt -->
@@ -91,6 +91,7 @@
         <span v-else>✖</span>
       </button>
     </div>
+    <slot/>
 
     <!-- 📱 Mobil: Overlay -->
     <div
