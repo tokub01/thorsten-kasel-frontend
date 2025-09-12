@@ -70,7 +70,10 @@
           <router-link to="/products" class="hover:underline">Bilder</router-link>
         </div>
         <div class="w-full border-b">
-          <router-link to="/adminBiography" class="hover:underline">Biographie</router-link>
+          <router-link to="/adminBiography" class="hover:underline">Biografie</router-link>
+        </div>
+        <div class="w-full border-b">
+          <router-link to="/contactRequests" class="hover:underline">Kontaktanfragen</router-link>
         </div>
       </div>
       <div class="xl:flex xl:items-end">
@@ -88,7 +91,7 @@
           aria-label="Menü öffnen"
       >
         <span v-if="!isOpen">☰</span>
-        <span v-else>✖</span>
+        <span v-else>X</span>
       </button>
     </div>
     <slot/>
@@ -112,10 +115,12 @@
             class="absolute top-6 right-6 text-4xl focus:outline-none"
             aria-label="Menü schließen"
         >
-          ✖
+          X
         </button>
-        <router-link to="/arbeiten" @click="closeMenu" class="hover:underline">Arbeiten</router-link>
-        <router-link to="/biographie" @click="closeMenu" class="hover:underline">Biographie</router-link>
+        <router-link to="/products" class="hover:underline">Bilder</router-link>
+        <router-link to="/adminBiography" @click="closeMenu" class="hover:underline">Biografie</router-link>
+        <router-link to="/categories" class="hover:underline ">Kategorien</router-link>
+        <router-link to="/contactRequests" class="hover:underline">Kontaktanfragen</router-link>
       </nav>
     </transition>
   </header>
