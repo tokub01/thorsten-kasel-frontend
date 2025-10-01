@@ -8,7 +8,8 @@
     <!-- Desktop-Menü (ab md) -->
     <nav v-if="route.name !== 'Login'" class="hidden md:flex justify-center space-x-12 mt-12 text-4xl font-semibold">
       <router-link to="/works" class="hover:underline">Arbeiten</router-link>
-      <router-link to="/biography" class="hover:underline">Biographie</router-link>
+      <router-link to="/biography" class="hover:underline">Vita</router-link>
+      <router-link to="/contact" class="hover:underline">Kontakt</router-link>
     </nav>
 
     <!-- Mobil: Burger-Button -->
@@ -47,6 +48,7 @@
         </button>
         <router-link to="/works" @click="closeMenu" class="hover:underline">Arbeiten</router-link>
         <router-link to="/biography" @click="closeMenu" class="hover:underline">Biographie</router-link>
+        <router-link to="/contact" @click="closeMenu" class="hover:underline">Kontakt</router-link>
       </nav>
     </transition>
   </header>
@@ -70,7 +72,7 @@
           <router-link to="/products" class="hover:underline">Bilder</router-link>
         </div>
         <div class="w-full border-b">
-          <router-link to="/adminBiography" class="hover:underline">Biografie</router-link>
+          <router-link to="/adminBiography" class="hover:underline">Vita</router-link>
         </div>
         <div class="w-full border-b">
           <router-link to="/contactRequests" class="hover:underline">Kontaktanfragen</router-link>
@@ -118,7 +120,7 @@
           X
         </button>
         <router-link to="/products" class="hover:underline">Bilder</router-link>
-        <router-link to="/adminBiography" @click="closeMenu" class="hover:underline">Biografie</router-link>
+        <router-link to="/adminBiography" @click="closeMenu" class="hover:underline">Vita</router-link>
         <router-link to="/categories" class="hover:underline ">Kategorien</router-link>
         <router-link to="/contactRequests" class="hover:underline">Kontaktanfragen</router-link>
       </nav>

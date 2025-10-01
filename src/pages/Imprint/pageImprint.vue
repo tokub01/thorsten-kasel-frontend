@@ -15,7 +15,7 @@
     <section class="mb-6">
       <h2 class="text-xl font-semibold mb-2">Kontakt</h2>
       <p>
-        E-Mail: <a href="mailto:kontakt@thorsten-kasel.de" class="text-blue-600 hover:underline">kontakt@thorsten-kasel.de</a>
+        E-Mail: <a href="mailto:thorsten.kasel@web.de" class="text-blue-600 hover:underline">thosten.kasel@web.de</a>
         <!-- Telefonnummer nur falls du sie angeben willst -->
       </p>
     </section>
@@ -26,13 +26,6 @@
         Thorsten Kasel<br />
         Hanielstr. 8 A<br />
         47119 Duisburg – Ruhrort
-      </p>
-    </section>
-
-    <section class="mb-6">
-      <h2 class="text-xl font-semibold mb-2">Entwicklung & technische Umsetzung</h2>
-      <p>
-        Tobias Kubina
       </p>
     </section>
 
