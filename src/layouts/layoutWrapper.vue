@@ -1,5 +1,5 @@
 <template>
-  <component :is="layoutComponent">
+  <component class="max-h-screen" :is="layoutComponent">
     <router-view />
   </component>
 </template>

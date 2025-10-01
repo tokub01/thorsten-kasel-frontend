@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="flex flex-col min-h-screen ">
       <PageHeader />
 
     <main class="flex-grow">
       <router-view />
     </main>
 
-    <footer>
+    <footer class="mt-auto">
       <PageFooter />
     </footer>
   </div>
