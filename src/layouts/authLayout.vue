@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col">
+  <div class="flex min-h-dvh">
     <PageHeader>
       <div class="md:ml-60">
         <router-view/>
