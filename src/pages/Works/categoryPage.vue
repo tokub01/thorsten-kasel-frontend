@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="text-white text-3xl flex justify-center mt-10">
+    <div class="text-white text-3xl flex justify-center mt-3">
       Kategorien
     </div>
     <div
       v-if="categoryStore.categories && categoryStore.categories.length > 0"
-      class="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-6xl mx-auto px-6 py-20"
+      class="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-6xl mx-auto px-6 py-5"
     >
 
       <!-- Kategorie -->
