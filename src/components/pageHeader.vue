@@ -1,8 +1,25 @@
 <template>
   <header v-if="route.meta.requiresAuth === false" class="text-gray-800">
     <!-- Name -->
-    <div class="text-4xl flex justify-center items-center border-b p-6 font-bold">
-      Thorsten Kasel
+    <!-- Mobil: Burger-Button -->
+
+    <div>
+      <div class="flex justify-between items-center sm:justify-center border-b">
+        <div class="text-4xl font-bold m-5">
+          Thorsten Kasel
+        </div>
+        <div v-if="route.name !== 'Login'"  class=" mr-3 md:hidden">
+          <button
+              @click="toggleMenu"
+              class="text-5xl font-bold focus:outline-none"
+              aria-label="Menü öffnen"
+          >
+            <span v-if="!isOpen">☰</span>
+            <span v-else>✖</span>
+          </button>
+        </div>
+      </div>
+
     </div>
 
     <!-- Desktop-Menü (ab md) -->
@@ -13,18 +30,6 @@
       <router-link to="/biography" class="hover:underline">Vita</router-link>
       <router-link to="/contact" class="hover:underline">Kontakt</router-link>
     </nav>
-
-    <!-- Mobil: Burger-Button -->
-    <div v-if="route.name !== 'Login'"  class="flex justify-end px-6 mt-4 md:hidden">
-      <button
-          @click="toggleMenu"
-          class="text-6xl focus:outline-none"
-          aria-label="Menü öffnen"
-      >
-        <span v-if="!isOpen">☰</span>
-        <span v-else>✖</span>
-      </button>
-    </div>
 
     <!-- Overlay für Mobil -->
     <div
