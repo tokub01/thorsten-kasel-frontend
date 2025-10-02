@@ -5,7 +5,7 @@
 
     <div>
       <div class="flex justify-between items-center sm:justify-center border-b">
-        <div class="text-4xl font-bold m-5">
+        <div class="text-4xl font-bold m-5 sm:text-6xl">
           Thorsten Kasel
         </div>
           <button
