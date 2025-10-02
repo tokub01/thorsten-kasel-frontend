@@ -1,5 +1,5 @@
 <template>
-  <div class="border w-1/2 m-auto mt-4 flex flex-col p-5">
+  <div class="border w-[90%] m-auto mt-4 flex flex-col p-5 mt-3">
     <p class="text-3xl font-bold border-b mb-3">Kontakt</p>
     <form class="w-full" @submit.prevent="handleSubmit">
       <div class="flex flex-col">
