@@ -47,7 +47,7 @@
           X
         </button>
         <router-link to="/works" @click="closeMenu" class="hover:underline">Arbeiten</router-link>
-        <router-link to="/biography" @click="closeMenu" class="hover:underline">Biographie</router-link>
+        <router-link to="/biography" @click="closeMenu" class="hover:underline">Vita</router-link>
         <router-link to="/contact" @click="closeMenu" class="hover:underline">Kontakt</router-link>
       </nav>
     </transition>
@@ -62,7 +62,7 @@
 
     <div
         v-if="route.meta.requiresAuth === true"
-        class="hidden md:flex [height:calc(100vh-6.5rem)] border-r flex-col justify-between items-center w-60 absolute left-0  space-y-6 text-xl"
+        class="hidden md:flex border-r flex-col justify-between items-center w-60 absolute left-0  space-y-6 text-xl"
     >
       <div class="text-center w-full">
         <div class="w-full border-b w-full">

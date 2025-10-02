@@ -1,10 +1,10 @@
-import LandingPage from '@/pages/Landing/landingPage.vue'
+import CategoryPage from '@/pages/Works/categoryPage.vue'
 
 const routes = [
     {
         path: '/',
         name: 'landing',
-        component: LandingPage,
+        component: CategoryPage,
         meta: { layout: 'guest', requiresAuth: false },
     },
 ]
