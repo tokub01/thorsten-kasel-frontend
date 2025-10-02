@@ -5,7 +5,7 @@
 
     <div>
       <div class="flex justify-between items-center sm:justify-center border-b">
-        <div class="text-4xl font-bold m-5 sm:text-6xl">
+        <div @click="router.push('landing')" class="hover:cursor-pointer text-4xl font-bold m-5 sm:text-6xl">
           Thorsten Kasel
         </div>
           <button
@@ -138,13 +138,15 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/Auth'
 const authStore = useAuthStore()
 
 const isOpen = ref(false)
 
 const route = useRoute();
+
+const router = useRouter();
 async function handleLogout() {
   try {
     authStore.logout()
