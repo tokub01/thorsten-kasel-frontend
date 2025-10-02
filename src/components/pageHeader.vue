@@ -5,13 +5,13 @@
 
     <div>
       <div class="flex justify-between items-center sm:justify-center border-b">
-        <div class="text-4xl font-bold m-4">
+        <div class="text-4xl font-bold m-5">
           Thorsten Kasel
         </div>
           <button
               v-if="route.name !== 'Login'"
               @click="toggleMenu"
-              class="text-4xl md:hidden p-3 font-bold focus:outline-none"
+              class="text-5xl md:hidden p-3 font-bold focus:outline-none"
               aria-label="Menü öffnen"
           >
             <span v-if="!isOpen">☰</span>
