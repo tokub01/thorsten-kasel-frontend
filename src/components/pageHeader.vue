@@ -9,6 +9,7 @@
     <nav v-if="route.name !== 'Login'" class="hidden md:flex justify-center space-x-12 mt-12 text-4xl font-semibold">
       <router-link to="/works" class="hover:underline">Arbeiten</router-link>
       <router-link to="/works" class="hover:underline">News</router-link>
+      <router-link to="/works" class="hover:underline">Ausstellungen</router-link>
       <router-link to="/biography" class="hover:underline">Vita</router-link>
       <router-link to="/contact" class="hover:underline">Kontakt</router-link>
     </nav>
@@ -49,6 +50,7 @@
         </button>
         <router-link to="/works" @click="closeMenu" class="hover:underline">Arbeiten</router-link>
         <router-link to="/works" @click="closeMenu" class="hover:underline">News</router-link>
+        <router-link to="/works" class="hover:underline">Ausstellungen</router-link>
         <router-link to="/biography" @click="closeMenu" class="hover:underline">Vita</router-link>
         <router-link to="/contact" @click="closeMenu" class="hover:underline">Kontakt</router-link>
       </nav>
