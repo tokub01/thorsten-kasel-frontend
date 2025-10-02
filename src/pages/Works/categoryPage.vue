@@ -1,8 +1,21 @@
 <template>
-  <div>
-    <div class="text-white text-3xl flex justify-center mt-3">
-      Kategorien
+  <div class="">
+    <div>
+
     </div>
+    <div class="px-6 my-10 items-center flex flex-col">
+      <div>
+        <div class="flex justify-center items-center mt-3 text-2xl sm:text-3xl text-center  text-white my-10">
+          Gesichter, Farbe, Identität - Kunst zwischen Realität und Traum
+        </div>
+        <div class="flex justify-center my-5 overflow-hidden rounded-lg mt-3">
+          <img src="https://place-hold.it/300x300" alt="" class="border border-gray-300 hover:border-white shadow-md hover:shadow-2xl transition-all duration-300 object-cover" />
+        </div>
+      </div>
+    </div>
+      <div class="text-white text-3xl flex justify-center mt-3">
+        Kategorien
+      </div>
     <div
       v-if="categoryStore.categories && categoryStore.categories.length > 0"
       class="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-6xl mx-auto px-6 py-5"
