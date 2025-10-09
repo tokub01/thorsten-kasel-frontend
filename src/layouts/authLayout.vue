@@ -1,21 +1,20 @@
 <template>
-  <div class="flex min-h-dvh">
-    <PageHeader>
-      <div class="md:ml-60">
-        <router-view/>
-      </div>
-    </PageHeader>
+  <div class="flex flex-col min-h-screen">
+    <PageHeader/>
 
-    <main class="flex-grow">
+    <main class="flex-grow md:ml-60">
+      <router-view/>
     </main>
 
-    <footer>
-      <PageFooter />
-    </footer>
+    <!--<PageFooter/>-->
   </div>
 </template>
 
 <script setup>
-import PageHeader from '@/components/pageHeader.vue'
-import PageFooter from '@/components/pageFooter.vue'
+import PageHeader from '@/components/admin/pageHeader.vue'
+//import PageFooter from '@/components/admin/pageFooter.vue'
 </script>
+
+<style scoped>
+/* Min-height + flex ensures footer is always at bottom */
+</style>
