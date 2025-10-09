@@ -1,30 +1,41 @@
 <template>
-  <div class="biography-editor">
-  <label for="biography">Vita</label>
+  <div class="bg-gray-50 min-h-screen py-12">
+    <div class="max-w-4xl mx-auto px-6">
+      <!-- Page Titel -->
+      <h1 class="text-4xl font-serif font-bold text-gray-800 text-center mb-6">
+        Vita / Künstlerischer Werdegang
+      </h1>
+      <p class="text-gray-600 text-center mb-12">
+        Hier können Sie die Vita bearbeiten und direkt eine Vorschau sehen.
+      </p>
 
-    <!-- Toolbar -->
-    <div id="toolbar">
-      <select class="ql-header">
-        <option value="1"></option>
-        <option value="2"></option>
-        <option selected></option>
-      </select>
-      <button class="ql-bold"></button>
-      <button class="ql-italic"></button>
-      <button class="ql-underline"></button>
-      <button class="ql-link"></button>
-      <button class="ql-list" value="ordered"></button>
-      <button class="ql-list" value="bullet"></button>
-      <button class="ql-clean"></button>
-    </div>
+      <!-- Editor Container -->
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <!-- Toolbar -->
+        <div id="toolbar" class="bg-gray-100 border-b border-gray-300 px-4 py-2 flex flex-wrap gap-2">
+          <select class="ql-header border rounded p-1">
+            <option value="1"></option>
+            <option value="2"></option>
+            <option selected></option>
+          </select>
+          <button class="ql-bold px-2 py-1 rounded hover:bg-gray-200"></button>
+          <button class="ql-italic px-2 py-1 rounded hover:bg-gray-200"></button>
+          <button class="ql-underline px-2 py-1 rounded hover:bg-gray-200"></button>
+          <button class="ql-link px-2 py-1 rounded hover:bg-gray-200"></button>
+          <button class="ql-list" value="ordered" px-2 py-1 rounded hover:bg-gray-200></button>
+          <button class="ql-list" value="bullet" px-2 py-1 rounded hover:bg-gray-200></button>
+          <button class="ql-clean px-2 py-1 rounded hover:bg-gray-200"></button>
+        </div>
 
-    <!-- Editor -->
-    <div ref="editor" class="editor"></div>
+        <!-- Editor -->
+        <div ref="editor" class="editor p-6 min-h-[400px]"></div>
+      </div>
 
-    <!-- Vorschau -->
-    <div class="preview">
-      <h3>Vorschau:</h3>
-      <div v-html="content"></div>
+      <!-- Vorschau -->
+      <div class="mt-8 p-6 bg-white rounded-xl shadow-md">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Vorschau</h2>
+        <div v-html="content" class="prose max-w-full text-gray-700"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -36,7 +47,6 @@ import 'quill/dist/quill.snow.css';
 
 const editor = ref(null);
 
-// Beispielhafte künstlerische Vita
 const content = ref(`
   <h2>Thorsten Kasel</h2>
   <p><strong>Geboren:</strong> XXX in Duisburg<br>
@@ -80,19 +90,14 @@ const content = ref(`
 
 onMounted(async () => {
   await nextTick();
-
   if (editor.value) {
     const quill = new Quill(editor.value, {
       theme: 'snow',
-      modules: {
-        toolbar: '#toolbar'
-      },
+      modules: { toolbar: '#toolbar' }
     });
 
-    // Startinhalt setzen
     quill.root.innerHTML = content.value;
 
-    // Inhalt live aktualisieren
     quill.on('text-change', () => {
       content.value = quill.root.innerHTML;
     });
@@ -101,39 +106,24 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.biography-editor {
-  max-width: 800px;
-  margin: 2rem auto;
-  font-family: Arial, sans-serif;
+.editor {
+  min-height: 400px;
+  background: white;
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
 }
 
-label {
-  display: block;
-  font-weight: bold;
+.prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+}
+
+.prose h2, .prose h3 {
+  margin-top: 1.5rem;
   margin-bottom: 0.5rem;
 }
 
-#toolbar {
-  border: 1px solid #ccc;
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  background: #f5f5f5;
-  padding: 8px;
-}
-
-.editor {
-  border: 1px solid #ccc;
-  border-top: none;
-  min-height: 300px;
-  border-radius: 0 0 4px 4px;
-  background: white;
-  padding: 12px;
-}
-
-.preview {
-  margin-top: 2rem;
-  padding: 1rem;
-  border-top: 1px solid #ddd;
-  background: #fafafa;
+.prose p {
+  margin-bottom: 1rem;
 }
 </style>

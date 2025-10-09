@@ -1,64 +1,77 @@
 <template>
-  <div class="">
-    <div>
-
-    </div>
-    <div class="px-6 my-10 items-center flex flex-col">
-      <div>
-        <div class="flex justify-center items-center mt-3 text-2xl sm:text-3xl text-center  text-white my-10">
-          Gesichter, Farbe, Identität - Kunst zwischen Realität und Traum
-        </div>
-        <div class="flex justify-center my-5 overflow-hidden rounded-lg mt-3">
-          <img src="https://place-hold.it/300x300" alt="" class="border border-gray-300 hover:border-white shadow-md hover:shadow-2xl transition-all duration-300 object-cover" />
-        </div>
+  <div class="bg-gray-50 min-h-screen">
+    <!-- Hero / Slogan -->
+    <div class="relative w-full bg-gray-100">
+      <div class="max-w-6xl mx-auto py-16 text-center px-6">
+        <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-800 mb-6">
+          Gesichter, Farbe, Identität – Kunst zwischen Realität und Traum
+        </h1>
+        <img
+          src="https://place-hold.it/800x400"
+          alt="Beispielbild"
+          class="mx-auto rounded-lg shadow-lg border border-gray-200 hover:shadow-2xl transition"
+        />
       </div>
     </div>
-      <div class="text-white text-3xl flex justify-center mt-3">
+
+    <!-- Kategorien -->
+    <div class="max-w-6xl mx-auto py-12 px-6">
+      <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 text-center mb-10">
         Kategorien
-      </div>
-    <div
-      v-if="categoryStore.categories && categoryStore.categories.length > 0"
-      class="grid grid-cols-1 md:grid-cols-3 gap-12 w-full max-w-6xl mx-auto px-6 py-5"
-    >
+      </h2>
 
-      <!-- Kategorie -->
       <div
-        v-for="category in categoryStore.categories"
-        :key="category.id"
-        @click="goToCategory(category.id)"
-        class="group cursor-pointer h-[28rem] flex items-center justify-center border border-gray-300 hover:border-white shadow-md hover:shadow-2xl transition-all duration-300"
+        v-if="categoryStore.categories && categoryStore.categories.length > 0"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8"
       >
-        <h2
-          class="text-2xl md:text-3xl font-light text-gray-100 group-hover:text-white text-center"
+        <div
+          v-for="category in categoryStore.categories"
+          :key="category.id"
+          @click="goToCategory(category.id)"
+          class="group cursor-pointer rounded-xl overflow-hidden relative shadow-md hover:shadow-xl transition"
         >
-          {{ category.name }}
-        </h2>
+          <div
+            class="absolute inset-0 bg-gray-200 group-hover:bg-gray-300 transition-opacity"
+          ></div>
+          <h3
+            class="relative text-center text-2xl sm:text-3xl font-medium text-gray-900 group-hover:text-gray-800 py-24"
+          >
+            {{ category.name }}
+          </h3>
+        </div>
       </div>
-    </div>
 
-    <div v-else class="text-center text-xl text-gray-200 italic py-20">
-      Keine Kategorien vorhanden
+      <div v-else class="text-center text-gray-400 italic py-20">
+        Keine Kategorien vorhanden
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from "vue";
-import { useRouter } from "vue-router";
-import { useCategoryStore } from "@/stores/Categories";
-import { useProductStore } from "@/stores/Products"
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCategoryStore } from '@/stores/Categories'
+import { useProductStore } from '@/stores/Products'
 
-const router = useRouter();
-const categoryStore = useCategoryStore();
-const productStore = useProductStore();
+const router = useRouter()
+const categoryStore = useCategoryStore()
+const productStore = useProductStore()
 
 onMounted(() => {
-  categoryStore.loadAllCategories();
-});
+  categoryStore.loadAllCategories()
+})
 
 const goToCategory = (categoryId) => {
-  productStore.loadAllProducts("", categoryId, "");
-  router.push({ name: "worksDetailPage", params: { categoryId } });
-
-};
+  productStore.loadAllProducts('', categoryId, '')
+  router.push({ name: 'worksDetailPage', params: { categoryId } })
+}
 </script>
+
+<style scoped>
+/* Optional: Hover-Effekt für Kategorien */
+.group:hover h3 {
+  transform: translateY(-4px);
+  transition: transform 0.3s ease;
+}
+</style>

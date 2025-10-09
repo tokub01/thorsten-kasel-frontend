@@ -12,6 +12,8 @@ import Products from "./Products";
 import AdminBiography from "./AdminBiography";
 import ContactRequests from "@/router/ContactRequests";
 import Contact from "@/router/Contact"
+import News from "@/router/News"
+import Exhibitions from "@/router/Exhibitions"
 function isAuthenticated() {
     return !!localStorage.getItem('authToken');
 }
@@ -34,6 +36,8 @@ const router = createRouter({
             name: 'MaintenancePage',
             component: MaintenancePage,
         },
+        ...Exhibitions,
+        ...News,
         ...Contact,
         ...ContactRequests,
         ...AdminBiography,

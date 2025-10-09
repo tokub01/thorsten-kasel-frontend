@@ -1,126 +1,140 @@
 <template>
-  <div class="border w-[90%] m-auto mt-4 flex flex-col p-5 mt-3">
-    <p class="text-3xl font-bold border-b mb-3">Kontakt</p>
-    <form class="w-full" @submit.prevent="handleSubmit">
-      <div class="flex flex-col">
-        <label for="email">E-Mail:</label>
-        <input id="email" v-model="email" class="border p-2" type="text" required />
-      </div>
-      <div class="flex flex-col mt-2">
-        <label for="name">Name:</label>
-        <input id="name" v-model="name" class="border p-2" type="text" required />
-      </div>
-      <div class="flex flex-col mt-2">
-        <label for="message">Nachricht:</label>
-        <textarea id="message" v-model="message" class="border p-2" required></textarea>
-      </div>
+  <div class="flex flex-col bg-gray-100 text-gray-800">
+    <!-- Inhalt -->
+    <main class="flex-grow">
+      <div class="max-w-3xl mx-auto px-6 py-16 text-center">
+        <h1 class="text-4xl sm:text-5xl font-serif font-bold mb-6 text-gray-900">
+          Kontakt
+        </h1>
+        <p class="text-lg text-gray-600 mb-12">
+          Schreib mir eine Nachricht – ich freue mich auf den Austausch.
+        </p>
 
-      <button
-        class="border p-2 hover:bg-gray-600 hover:cursor-pointer mt-4"
-        :disabled="store.loading || cooldown > 0"
-        type="submit"
-      >
-        {{ cooldown > 0 ? `Warte ${cooldown}s` : 'Absenden' }}
-      </button>
+        <!-- Kontaktformular -->
+        <form
+          @submit.prevent="handleSubmit"
+          class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-md p-8 md:p-10 space-y-6 border border-gray-200"
+        >
+          <div>
+            <label for="name" class="block text-left mb-2 text-gray-700 font-semibold">
+              Name
+            </label>
+            <input
+              id="name"
+              v-model="name"
+              type="text"
+              required
+              class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+            />
+          </div>
 
-      <p v-if="store.errorMessage" class="error mt-2">{{ store.errorMessage }}</p>
-      <p v-if="store.successMessage" class="text-green-600 mt-2">{{ store.successMessage }}</p>
-    </form>
+          <div>
+            <label for="email" class="block text-left mb-2 text-gray-700 font-semibold">
+              E-Mail
+            </label>
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              required
+              class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label for="message" class="block text-left mb-2 text-gray-700 font-semibold">
+              Nachricht
+            </label>
+            <textarea
+              id="message"
+              v-model="message"
+              rows="6"
+              required
+              class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-gray-400 focus:outline-none"
+            ></textarea>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full bg-gray-900 text-white font-semibold py-3 rounded-lg hover:bg-gray-700 transition"
+            :disabled="store.loading || cooldown > 0"
+          >
+            {{ cooldown > 0 ? `Warte ${cooldown}s` : 'Nachricht senden' }}
+          </button>
+
+          <p
+            v-if="store.errorMessage"
+            class="text-red-600 text-center mt-2 font-medium"
+          >
+            {{ store.errorMessage }}
+          </p>
+          <p
+            v-if="store.successMessage"
+            class="text-green-600 text-center mt-2 font-medium"
+          >
+            {{ store.successMessage }}
+          </p>
+        </form>
+      </div>
+    </main>
   </div>
 </template>
 
-<style scoped>
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-.error {
-  color: red;
-}
-</style>
-
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useContactStore } from '@/stores/Contact'
+import { ref, onMounted } from "vue";
+import { useContactStore } from "@/stores/Contact";
 
-const store = useContactStore()
+const store = useContactStore();
 
-const name = ref('')
-const email = ref('')
-const message = ref('')
-const cooldown = ref(0)
-let cooldownInterval = null
+const name = ref("");
+const email = ref("");
+const message = ref("");
+const cooldown = ref(0);
+let cooldownInterval = null;
 
-let grecaptchaReady = ref(false)
-
+// Cooldown Funktionen
 const startCooldown = (seconds) => {
-  const until = Date.now() + seconds * 1000
-  localStorage.setItem('contactCooldownUntil', until.toString())
-
-  updateCooldown(until)
-  if (cooldownInterval) clearInterval(cooldownInterval)
-  cooldownInterval = setInterval(() => updateCooldown(until), 1000)
-}
+  const until = Date.now() + seconds * 1000;
+  localStorage.setItem("contactCooldownUntil", until.toString());
+  updateCooldown(until);
+  if (cooldownInterval) clearInterval(cooldownInterval);
+  cooldownInterval = setInterval(() => updateCooldown(until), 1000);
+};
 
 const updateCooldown = (until) => {
-  const diff = Math.floor((until - Date.now()) / 1000)
-  cooldown.value = diff > 0 ? diff : 0
+  const diff = Math.floor((until - Date.now()) / 1000);
+  cooldown.value = diff > 0 ? diff : 0;
   if (cooldown.value <= 0 && cooldownInterval) {
-    clearInterval(cooldownInterval)
-    cooldownInterval = null
-    localStorage.removeItem('contactCooldownUntil')
+    clearInterval(cooldownInterval);
+    cooldownInterval = null;
+    localStorage.removeItem("contactCooldownUntil");
   }
-}
+};
 
-// reCAPTCHA Script laden + Cooldown prüfen
 onMounted(() => {
-  // Cooldown aus localStorage wiederherstellen
-  const savedUntil = localStorage.getItem('contactCooldownUntil')
+  const savedUntil = localStorage.getItem("contactCooldownUntil");
   if (savedUntil) {
-    const until = parseInt(savedUntil)
+    const until = parseInt(savedUntil);
     if (until > Date.now()) {
-      updateCooldown(until)
-      cooldownInterval = setInterval(() => updateCooldown(until), 1000)
+      updateCooldown(until);
+      cooldownInterval = setInterval(() => updateCooldown(until), 1000);
     } else {
-      localStorage.removeItem('contactCooldownUntil')
+      localStorage.removeItem("contactCooldownUntil");
     }
   }
+});
 
-  // reCAPTCHA Script laden
-  const script = document.createElement('script')
-  script.src = 'https://www.google.com/recaptcha/api.js?render=6LfRCtYrAAAAANiO5azebKcTfT_jU_IUvkMQ91fo'
-  script.async = true
-  script.defer = true
-  script.onload = () => {
-    grecaptchaReady.value = true
+const handleSubmit = async () => {
+  try {
+    await store.submit(email.value, name.value, message.value);
+    if (!store.errorMessage) {
+      name.value = "";
+      email.value = "";
+      message.value = "";
+      startCooldown(300);
+    }
+  } catch (err) {
+    store.errorMessage = err.message || "Fehler beim Absenden";
   }
-  document.head.appendChild(script)
-})
-
-// Formular absenden
-const handleSubmit = () => {
-  if (!grecaptchaReady.value || !window.grecaptcha) {
-    store.errorMessage = 'reCAPTCHA noch nicht geladen!'
-    return
-  }
-
-  window.grecaptcha.ready(() => {
-    window.grecaptcha.execute('6LfRCtYrAAAAANiO5azebKcTfT_jU_IUvkMQ91fo', { action: 'submit_contact' })
-      .then((token) => {
-        store.submit(email.value, name.value, message.value, token)
-          .then(() => {
-            if (!store.errorMessage) {
-              name.value = ''
-              email.value = ''
-              message.value = ''
-              startCooldown(300) // ✅ jetzt 500 Sekunden und persistent
-            }
-          })
-      })
-      .catch(err => {
-        store.errorMessage = err.message || 'Fehler bei reCAPTCHA'
-      })
-  })
-}
+};
 </script>
-

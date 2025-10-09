@@ -1,46 +1,76 @@
 <template>
-  <div class="">
-    <div class="flex justify-center items-center">
-      <form @submit.prevent="handleLogin" class="border m-4 p-4 flex flex-col justify-center">
-        <div class="grid grid-cols-1">
-          <div class="text-2xl mb-3">Login</div>
-        </div>
-        <div class="grid grid-cols-1 mb-3">
-          <label for="email_input">E-Mail:</label>
-          <input id="email_input" class="border p-1" v-model="email" name="email" type="text" />
-          <div v-if="authStore.errors.email" class="text-red-600 text-sm mt-1">
+  <div class="flex items-center justify-center bg-gray-100 px-4">
+    <div class="max-w-md w-full bg-white shadow-lg rounded-xl p-8">
+      <!-- Titel -->
+      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Admin Login</h1>
+
+      <!-- Login Form -->
+      <form @submit.prevent="handleLogin" class="space-y-4">
+        <div class="flex flex-col">
+          <label for="email" class="text-gray-700 font-semibold mb-1">E-Mail</label>
+          <input
+            id="email"
+            v-model="email"
+            type="email"
+            placeholder="admin@domain.com"
+            class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+            required
+          />
+          <p v-if="authStore.errors.email" class="text-red-600 text-sm mt-1">
             {{ authStore.errors.email[0] }}
-          </div>
+          </p>
         </div>
 
-        <div class="grid grid-cols-1 mb-3">
-          <label for="password_input">Passwort:</label>
-          <input id="password_input" class="border p-1" v-model="password" name="password" type="password" />
-          <div v-if="authStore.errors.password" class="text-red-600 text-sm mt-1">
+        <div class="flex flex-col">
+          <label for="password" class="text-gray-700 font-semibold mb-1">Passwort</label>
+          <input
+            id="password"
+            v-model="password"
+            type="password"
+            placeholder="••••••••"
+            class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+            required
+          />
+          <p v-if="authStore.errors.password" class="text-red-600 text-sm mt-1">
             {{ authStore.errors.password[0] }}
-          </div>
+          </p>
         </div>
-        <div v-if="authStore.errors.length > 1" class="text-red-600 text-sm mb-3 mt-1">
+
+        <button
+          type="submit"
+          class="w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 transition font-semibold"
+        >
+          Anmelden
+        </button>
+
+        <p v-if="authStore.errors.length > 1" class="text-red-600 text-sm mt-2 text-center">
           {{ authStore.errors }}
-        </div>
-        <button type="submit" class="border hover:bg-gray-600">Anmelden</button>
+        </p>
       </form>
     </div>
   </div>
 </template>
+
 <script setup>
 import { ref } from "vue";
-import { useAuthStore } from '@/stores/Auth'
+import { useAuthStore } from "@/stores/Auth";
 
+const authStore = useAuthStore();
 const email = ref("");
 const password = ref("");
-const authStore = useAuthStore()
 
 const handleLogin = async () => {
   try {
-    await authStore.login(email.value, password.value)
-  } catch (error) {
-    console.log(error)
+    await authStore.login(email.value, password.value);
+  } catch (err) {
+    console.error(err);
   }
-}
+};
 </script>
+
+<style scoped>
+/* Optional: leichtes Animation beim Fokus */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.5); /* Tailwind gray-400 */
+}
+</style>
