@@ -1,11 +1,14 @@
 <template>
-  <div class="flex items-center justify-center bg-gray-100 px-4">
-    <div class="max-w-md w-full bg-white shadow-lg rounded-xl p-8">
+  <div class="flex items-center justify-center bg-gray-100 px-4 py-16">
+    <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
       <!-- Titel -->
-      <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Admin Login</h1>
+      <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center font-serif">
+        Admin Login
+      </h1>
 
       <!-- Login Form -->
-      <form @submit.prevent="handleLogin" class="space-y-4">
+      <form @submit.prevent="handleLogin" class="space-y-5">
+        <!-- E-Mail -->
         <div class="flex flex-col">
           <label for="email" class="text-gray-700 font-semibold mb-1">E-Mail</label>
           <input
@@ -21,6 +24,7 @@
           </p>
         </div>
 
+        <!-- Passwort -->
         <div class="flex flex-col">
           <label for="password" class="text-gray-700 font-semibold mb-1">Passwort</label>
           <input
@@ -36,17 +40,29 @@
           </p>
         </div>
 
+        <!-- Login Button -->
         <button
           type="submit"
-          class="w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 transition font-semibold"
+          class="w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 transition font-semibold shadow-md"
         >
           Anmelden
         </button>
 
-        <p v-if="authStore.errors.length > 1" class="text-red-600 text-sm mt-2 text-center">
+        <!-- Fehlerausgabe -->
+        <p v-if="authStore.errors.length > 1" class="text-red-600 text-sm mt-3 text-center">
           {{ authStore.errors }}
         </p>
       </form>
+
+      <!-- Link zur Hauptseite -->
+      <div class="mt-6 text-center">
+        <router-link
+          to="/"
+          class="text-sm text-gray-600 hover:text-gray-900 transition font-medium"
+        >
+          ← Zurück zur Website
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -69,8 +85,8 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-/* Optional: leichtes Animation beim Fokus */
+/* Sanfte Fokus-Hervorhebung */
 input:focus {
-  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.5); /* Tailwind gray-400 */
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.4);
 }
 </style>

@@ -1,10 +1,10 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-gray-100 text-gray-800">
+  <div class="flex min-h-screen flex-col bg-gray-100 text-gray-800">
     <!-- Header -->
     <PageHeader />
 
     <!-- Hauptinhalt -->
-    <main class="flex-grow">
+    <main class="flex-grow h-100">
       <router-view />
     </main>
 
