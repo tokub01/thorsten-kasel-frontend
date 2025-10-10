@@ -7,9 +7,9 @@
     <div class="px-6 py-8 border-b text-center">
       <h1
         class="text-2xl font-serif font-bold cursor-pointer hover:text-gray-700 transition"
-        @click="router.push('/')"
+        @click="router.push('/admin')"
       >
-        Thorsten Kasel
+        Admin Dashboard
       </h1>
     </div>
 
@@ -41,7 +41,7 @@
 
   <!-- Mobile Header -->
   <header class="md:hidden w-full bg-gray-100 flex justify-between items-center px-4 py-4 border-b shadow-sm">
-    <h1 class="text-xl font-serif font-bold text-gray-800">Thorsten Kasel</h1>
+    <h1 class="text-xl font-serif font-bold text-gray-800">Admin Dashboard</h1>
     <button
       @click="toggleMenu"
       class="text-3xl text-gray-700 focus:outline-none"
@@ -102,11 +102,14 @@ const authStore = useAuthStore();
 
 const isOpen = ref(false);
 
+// Admin Links inklusive Ausstellungen & News
 const adminLinks = [
   { to: '/categories', label: 'Kategorien' },
   { to: '/products', label: 'Bilder' },
   { to: '/adminBiography', label: 'Vita' },
   { to: '/contactRequests', label: 'Kontaktanfragen' },
+  { to: '/admin/exhibitions', label: 'Ausstellungen' },
+  { to: '/admin/newsPage', label: 'News' },
 ];
 
 function toggleMenu() { isOpen.value = !isOpen.value; }
