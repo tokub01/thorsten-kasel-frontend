@@ -1,72 +1,60 @@
 <template>
-  <div class="bg-gray-50 min-h-screen py-12 px-6">
-    <!-- Titel / Intro -->
-    <section class="max-w-4xl mx-auto text-center mb-12">
-      <h1 class="text-4xl sm:text-5xl font-serif font-bold text-gray-800 mb-4">
-        Ausstellungen
-      </h1>
-      <p class="text-gray-600 text-lg">
-        Eine Übersicht über vergangene und aktuelle Ausstellungen von Thorsten Kasel.
-      </p>
-    </section>
+  <div class="bg-gray-50 min-h-screen">
+    <section class="mx-auto px-6 py-16">
+      <h1 class="text-4xl font-serif font-bold text-gray-800 mb-6">Ausstellungen</h1>
+      <p class="text-gray-600 mb-12">Eine Übersicht über die bisherigen und kommenden Ausstellungen von Thorsten Kasel.</p>
 
-    <!-- Ausstellungen -->
-    <section class="max-w-5xl mx-auto grid gap-8">
-      <router-link
-        v-for="exhibition in exhibitions"
-        :key="exhibition.id"
-        :to="{ name: 'exhibitionDetailPage', params: { exhibitionsId: exhibition.id } }"
-        class="block bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all"
-      >
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">{{ exhibition.title }}</h2>
-            <p class="text-gray-500 mb-2">{{ exhibition.date }} | {{ exhibition.location }}</p>
-          </div>
-          <div class="mt-4 md:mt-0">
-            <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-sm">
-              {{ exhibition.type }}
-            </span>
+      <div v-if="exhibitions.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-for="exh in exhibitions" :key="exh.id" class="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer" @click="goToDetail(exh.id)">
+          <img :src="exh.image" :alt="exh.title" class="w-full h-48 object-cover">
+          <div class="p-4">
+            <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ exh.title }}</h2>
+            <p class="text-gray-500 text-sm mb-2 line-clamp-3">{{ exh.description }}</p>
+            <p class="text-gray-400 text-xs">{{ formatDate(exh.date) }}</p>
           </div>
         </div>
-        <p class="text-gray-600 mt-4 line-clamp-3">{{ exhibition.description }}</p>
-      </router-link>
+      </div>
+
+      <div v-else class="text-center text-gray-500 py-20">
+        Keine Ausstellungen vorhanden
+      </div>
     </section>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+
+// Beispielhafte Ausstellungen
 const exhibitions = ref([
   {
     id: 1,
-    title: "Zwischen Linien",
-    date: "2023",
-    location: "Galerie Blau, Berlin",
-    type: "Einzelausstellung",
-    description:
-      "Eine visuelle Exploration von Raum und Form, die die Grenzen der Malerei erweitert.",
+    title: 'Zwischen Linien',
+    description: 'Einzelausstellung im Kunstverein Leipzig mit Werken aus den Jahren 2024–2025.',
+    date: '2025-10-15',
+    image: 'https://place-hold.it/600x400',
   },
   {
     id: 2,
-    title: "Verlorene Räume",
-    date: "2021",
-    location: "Kunsthaus Dresden",
-    type: "Einzelausstellung",
-    description:
-      "Installationen und Zeichnungen, die die Vergänglichkeit urbaner Räume reflektieren.",
-  },
-  {
-    id: 3,
-    title: "Positionen der Gegenwart",
-    date: "2024",
-    location: "Kunstverein Leipzig",
-    type: "Gruppenausstellung",
-    description:
-      "Eine Auswahl zeitgenössischer Arbeiten, die aktuelle Themen der Gesellschaft behandeln.",
+    title: 'Fokus Farbe',
+    description: 'Gruppenausstellung mit Fokus auf experimentelle Farbkonzepte.',
+    date: '2025-09-10',
+    image: 'https://place-hold.it/600x400',
   },
 ]);
+
+function goToDetail(id) {
+  router.push(`/exhibitions/${id}`);
+}
+
+// Datum nach deutschem Format
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 </script>
 
 <style scoped>

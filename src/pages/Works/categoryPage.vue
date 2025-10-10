@@ -2,7 +2,7 @@
   <div class="bg-gray-50 min-h-screen">
     <!-- Hero / Slogan -->
     <div class="relative w-full bg-gray-100">
-      <div class="max-w-6xl mx-auto py-16 text-center px-6">
+      <div class="mx-auto py-16 text-center px-6">
         <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-800 mb-6">
           Gesichter, Farbe, Identität – Kunst zwischen Realität und Traum
         </h1>
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Kategorien -->
-    <div class="max-w-6xl mx-auto py-12 px-6">
+    <div class="mx-auto py-12 px-6">
       <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 text-center mb-10">
         Kategorien
       </h2>

@@ -1,18 +1,23 @@
 <template>
-  <div class="bg-gray-50 min-h-screen py-12 px-6">
-    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-8">
-      <button @click="$router.back()" class="text-gray-700 hover:text-gray-900 mb-6 flex items-center gap-2">
-        ← Zurück
+  <div class="bg-gray-50 min-h-screen">
+    <section class="max-w-4xl mx-auto px-6 py-16">
+      <button @click="$router.push('/news')" class="text-gray-700 hover:text-gray-900 mb-6">
+        ← Zurück zur News-Übersicht
       </button>
 
-      <h1 class="text-4xl font-serif font-bold text-gray-800 mb-4">{{ newsItem.title }}</h1>
-      <p class="text-gray-500 mb-6">{{ newsItem.date }}</p>
-
-      <div class="prose max-w-full">
-        <p>{{ newsItem.content }}</p>
-        <img v-if="newsItem.image" :src="newsItem.image" class="mt-6 rounded-lg shadow-md" />
+      <div v-if="newsItem" class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <img :src="newsItem.image" :alt="newsItem.title" class="w-full h-64 object-cover">
+        <div class="p-6">
+          <h1 class="text-3xl font-serif font-bold text-gray-800 mb-3">{{ newsItem.title }}</h1>
+          <p class="text-gray-400 text-sm mb-4">{{ formatDate(newsItem.date) }}</p>
+          <p class="text-gray-600 leading-relaxed">{{ newsItem.description }}</p>
+        </div>
       </div>
-    </div>
+
+      <div v-else class="text-center text-gray-500 py-20">
+        News-Eintrag nicht gefunden
+      </div>
+    </section>
   </div>
 </template>
 
@@ -21,46 +26,33 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const newsId = route.params.newsId;
 
-const newsItem = ref({
-  id: 0,
-  title: '',
-  date: '',
-  content: '',
-  image: '',
-});
-
-// Beispielhafte Daten - in der Praxis per API laden
-const allNews = [
+const newsData = [
   {
     id: 1,
-    title: "Neue Einzelausstellung in Berlin",
-    date: "2025-09-15",
-    content:
-      "Thorsten Kasel präsentiert seine neuesten Werke in der Galerie Blau. Die Ausstellung zeigt eine Reihe großformatiger Malereien, die sich mit urbaner Landschaft und menschlicher Wahrnehmung auseinandersetzen.",
-    image: "https://place-hold.it/800x400",
+    title: 'Neue Ausstellung angekündigt',
+    description: 'Thorsten Kasel präsentiert seine neue Ausstellung „Zwischen Linien“ im Kunstverein Leipzig.',
+    date: '2025-10-09',
+    image: 'https://place-hold.it/800x400',
   },
   {
     id: 2,
-    title: "Kunstmesse Leipzig 2025",
-    date: "2025-08-01",
-    content:
-      "Teilnahme an der Kunstmesse Leipzig mit Fokus auf zeitgenössische Malerei. Thorsten Kasels Arbeiten wurden von internationalen Sammlern und Kuratoren hervorgehoben.",
-    image: "https://place-hold.it/800x401",
-  },
-  {
-    id: 3,
-    title: "Auszeichnung für innovative Arbeiten",
-    date: "2025-07-20",
-    content:
-      "Verleihung des Kunstförderpreises für experimentelle Malerei und Installation. Die Jury lobte die einzigartige Handschrift und die künstlerische Forschung in der Arbeit von Thorsten Kasel.",
-    image: "",
+    title: 'Künstlergespräch',
+    description: 'Einblicke in den kreativen Prozess von Thorsten Kasel bei einem öffentlichen Künstlergespräch.',
+    date: '2025-09-25',
+    image: 'https://place-hold.it/800x400',
   },
 ];
 
+const newsItem = ref(null);
+
 onMounted(() => {
-  const data = allNews.find(n => n.id === parseInt(newsId));
-  if (data) newsItem.value = data;
+  const id = parseInt(route.params.newsId);
+  newsItem.value = newsData.find(item => item.id === id) || null;
 });
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 </script>

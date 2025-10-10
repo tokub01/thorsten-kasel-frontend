@@ -1,6 +1,6 @@
 <template>
   <footer class="bg-gray-100 border-t">
-    <div class="max-w-6xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between gap-8">
+    <div class="mx-auto px-6 py-10 flex flex-col md:flex-row justify-between gap-8">
       <!-- Rechtliches -->
       <div class="space-y-2">
         <h2 class="font-semibold text-gray-800">Rechtliches</h2>
