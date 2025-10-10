@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-gray-50 p-6">
     <div class="max-w-6xl mx-auto">
       <!-- Header & Aktionen -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
@@ -12,26 +12,6 @@
           >
             + Neues Bild
           </button>
-
-          <form v-if="page===0" class="flex flex-wrap gap-2 items-center">
-            <select v-model="sort" class="border border-gray-300 rounded p-2 focus:ring-2 focus:ring-gray-400">
-              <option value="">Sortieren...</option>
-              <option value="newest">Neueste zuerst</option>
-              <option value="oldest">Älteste zuerst</option>
-            </select>
-            <select v-model="selectedCategory" class="border border-gray-300 rounded p-2 focus:ring-2 focus:ring-gray-400">
-              <option value="">Kategorie wählen</option>
-              <option v-for="category in categoryStore.categories" :key="category.id" :value="category.id">
-                {{ category.name }}
-              </option>
-            </select>
-            <input
-              v-model="keyword"
-              type="text"
-              placeholder="Suche nach Titel"
-              class="border border-gray-300 rounded p-2 focus:ring-2 focus:ring-gray-400"
-            />
-          </form>
         </div>
       </div>
 
@@ -43,6 +23,7 @@
               <th class="px-6 py-3">Titel</th>
               <th class="px-6 py-3">Beschreibung</th>
               <th class="px-6 py-3">Kategorie</th>
+              <th class="px-6 py-3 text-center">Aktiv</th>
               <th class="px-6 py-3">Bild</th>
               <th class="px-6 py-3 text-center">Aktionen</th>
             </tr>
@@ -52,6 +33,14 @@
               <td class="px-6 py-3 text-gray-800">{{ product.title }}</td>
               <td class="px-6 py-3 text-gray-600">{{ product.description }}</td>
               <td class="px-6 py-3 text-gray-700">{{ product.category_id.name }}</td>
+              <td class="px-6 py-3 text-center">
+                <span
+                  class="px-2 py-1 rounded-full text-xs font-semibold"
+                  :class="product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                >
+                  {{ product.is_active ? 'Ja' : 'Nein' }}
+                </span>
+              </td>
               <td class="px-6 py-3">
                 <img :src="product.image" class="w-24 h-24 object-cover rounded shadow-sm"/>
               </td>
@@ -65,7 +54,7 @@
               </td>
             </tr>
             <tr v-if="!productStore.products?.data || productStore.products.data.length === 0">
-              <td colspan="5" class="text-center py-6 text-gray-500 italic">Keine Produkte vorhanden.</td>
+              <td colspan="6" class="text-center py-6 text-gray-500 italic">Keine Produkte vorhanden.</td>
             </tr>
           </tbody>
         </table>
@@ -108,6 +97,11 @@
                 </select>
               </div>
 
+              <div class="flex items-center gap-3">
+                <input type="checkbox" id="isActive" v-model="isActive" class="w-4 h-4"/>
+                <label for="isActive" class="text-gray-700 font-medium">Aktiv</label>
+              </div>
+
               <div class="flex justify-end gap-3 pt-3 border-t">
                 <button type="button" @click="page=0" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">Abbrechen</button>
                 <button type="submit" class="px-5 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition">
@@ -136,6 +130,7 @@ const title = ref('')
 const description = ref('')
 const imageSelection = ref(null)
 const categorySelection = ref(null)
+const isActive = ref(true)
 const sort = ref('newest')
 const selectedCategory = ref('')
 const keyword = ref('')
@@ -149,6 +144,7 @@ function openEditPage(product) {
   description.value = product.description
   imageSelection.value = null
   categorySelection.value = product.category_id.id
+  isActive.value = product.is_active
   page.value = 2
 }
 
@@ -158,6 +154,7 @@ async function storeImage() {
   formData.append('description', description.value)
   formData.append('image', imageSelection.value)
   formData.append('category_id', categorySelection.value)
+  formData.append('is_active', isActive.value)
   await productStore.storeProduct(formData)
   resetForm()
 }
@@ -168,6 +165,7 @@ async function updateImage() {
   formData.append('description', description.value)
   if(imageSelection.value) formData.append('image', imageSelection.value)
   formData.append('category_id', categorySelection.value)
+  formData.append('is_active', isActive.value)
   await productStore.updateProduct(formData)
   resetForm()
 }
@@ -182,6 +180,7 @@ function resetForm() {
   description.value = ''
   imageSelection.value = null
   categorySelection.value = null
+  isActive.value = true
   page.value = 0
   loadProducts()
 }
