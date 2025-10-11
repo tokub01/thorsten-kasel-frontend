@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 p-6">
+  <div class="bg-gray-100 p-6">
     <!-- Titel / Intro -->
     <section class="text-center mb-12">
       <h1 class="text-4xl sm:text-5xl font-serif font-bold text-gray-800 mb-4">

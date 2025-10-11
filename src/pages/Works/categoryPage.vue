@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 min-h-screen">
+  <div class="bg-gray-100 min-h-screen">
     <!-- Hero / Slogan -->
     <div class="relative w-full bg-gray-100">
       <div class="mx-auto py-16 text-center px-6">
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Kategorien -->
-    <div class="mx-auto py-12 px-6">
+    <div class="bg-gray-100 mx-auto py-12 px-6">
       <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 text-center mb-10">
         Kategorien
       </h2>
