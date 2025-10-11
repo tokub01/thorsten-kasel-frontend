@@ -84,7 +84,7 @@ onMounted(() => {
 });
 
 const filteredNews = computed(() =>
-  newsStore.news.filter(item => item.isActive === 1)
+  newsStore.news.filter(item => item.isActive === true)
 );
 
 // Detailansicht anzeigen
