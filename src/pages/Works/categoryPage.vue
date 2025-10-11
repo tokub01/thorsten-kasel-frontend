@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-gray-100 min-h-screen">
+  <div class="bg-gray-50 min-h-screen">
     <!-- Hero / Slogan -->
-    <div class="relative w-full bg-gray-100">
+    <div class="relative w-full bg-gray-50">
       <div class="mx-auto py-16 text-center px-6">
         <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-800 mb-6">
           Gesichter, Farbe, Identität – Kunst zwischen Realität und Traum
@@ -15,7 +15,7 @@
     </div>
 
     <!-- Kategorien -->
-    <div class="bg-gray-100 mx-auto py-12 px-6">
+    <div class="mx-auto py-12 px-6 max-w-6xl">
       <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 text-center mb-10">
         Kategorien
       </h2>
@@ -28,14 +28,10 @@
           v-for="category in categoryStore.categories"
           :key="category.id"
           @click="goToCategory(category.id)"
-          class="group cursor-pointer rounded-xl overflow-hidden relative shadow-md hover:shadow-xl transition"
+          class="group cursor-pointer rounded-xl overflow-hidden relative shadow-md hover:shadow-lg transition"
         >
-          <div
-            class="absolute inset-0 bg-gray-200 group-hover:bg-gray-300 transition-opacity"
-          ></div>
-          <h3
-            class="relative text-center text-2xl sm:text-3xl font-medium text-gray-900 group-hover:text-gray-800 py-24"
-          >
+          <div class="absolute inset-0 bg-gray-200 group-hover:bg-gray-300 transition-opacity"></div>
+          <h3 class="relative text-center text-2xl sm:text-3xl font-medium text-gray-900 group-hover:text-gray-800 py-24">
             {{ category.name }}
           </h3>
         </div>
@@ -69,7 +65,6 @@ const goToCategory = (categoryId) => {
 </script>
 
 <style scoped>
-/* Optional: Hover-Effekt für Kategorien */
 .group:hover h3 {
   transform: translateY(-4px);
   transition: transform 0.3s ease;
