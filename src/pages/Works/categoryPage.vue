@@ -15,7 +15,7 @@
     </div>
 
     <!-- Kategorien -->
-    <div class="mx-auto py-12 px-6 max-w-6xl">
+    <div class="mx-auto py-12 px-6">
       <h2 class="text-2xl sm:text-3xl font-semibold text-gray-800 text-center mb-10">
         Kategorien
       </h2>
