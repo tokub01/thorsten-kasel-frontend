@@ -1,10 +1,10 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-gray-100 text-gray-800">
+  <div class="flex flex-col min-h-screen bg-gray-100 text-gray-800">
     <!-- Header -->
     <PageHeader />
 
     <!-- Hauptinhalt -->
-    <main class="flex-grow h-100">
+    <main class="flex-grow">
       <router-view />
     </main>
 
@@ -19,7 +19,7 @@ import PageFooter from '@/components/guest/pageFooter.vue'
 </script>
 
 <style scoped>
-/* Basis-Setup, damit min-h-screen funktioniert */
+/* Stellt sicher, dass der gesamte Viewport verwendet wird */
 html, body, #app {
   height: 100%;
   margin: 0;

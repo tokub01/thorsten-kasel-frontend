@@ -7,7 +7,7 @@
           Gesichter, Farbe, Identität – Kunst zwischen Realität und Traum
         </h1>
         <img
-          src="https://place-hold.it/800x400"
+          src="https://placeholdit.com/800x400/dddddd/999999"
           alt="Beispielbild"
           class="mx-auto rounded-lg shadow-lg border border-gray-200 hover:shadow-2xl transition"
         />

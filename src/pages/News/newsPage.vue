@@ -1,67 +1,104 @@
 <template>
-  <div class="bg-gray-50 min-h-screen">
-    <section class="mx-auto px-6 py-16">
-      <h1 class="text-4xl font-serif font-bold text-gray-800 mb-6">News & Updates</h1>
-      <p class="text-gray-600 mb-12">Hier findest du aktuelle Neuigkeiten und Ankündigungen von Thorsten Kasel.</p>
+  <section class="bg-gray-50 py-12 px-6">
+    <div class="max-w-5xl mx-auto">
 
-      <div v-if="news.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="item in news" :key="item.id" class="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer" @click="goToDetail(item.id)">
-          <img :src="item.image" :alt="item.title" class="w-full h-48 object-cover">
-          <div class="p-4">
-            <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ item.title }}</h2>
-            <p class="text-gray-500 text-sm mb-2 line-clamp-3">{{ item.description }}</p>
-            <p class="text-gray-400 text-xs">{{ formatDate(item.date) }}</p>
+      <!-- Titel -->
+      <h1 class="text-4xl font-serif font-bold text-gray-800 mb-10 text-center">
+        Neuigkeiten
+      </h1>
+
+      <!-- Ladeanzeige -->
+      <div v-if="newsStore.loading" class="text-center text-gray-500 py-8">
+        Lade Neuigkeiten...
+      </div>
+
+      <!-- Fehleranzeige -->
+      <div v-else-if="newsStore.error" class="text-center text-red-600 py-8">
+        {{ newsStore.error.message || 'Fehler beim Laden der Neuigkeiten.' }}
+      </div>
+
+      <!-- Detailansicht -->
+      <div v-else-if="selectedNews" class="bg-white shadow rounded-xl overflow-hidden">
+        <img
+          v-if="selectedNews.image"
+          :src="selectedNews.image"
+          alt="News Bild"
+          class="w-full h-96 object-cover"
+        />
+        <div class="p-8">
+          <h1 class="text-4xl font-bold font-serif text-gray-800 mb-4">{{ selectedNews.title }}</h1>
+          <p class="text-gray-500 mb-6">{{ formatDate(selectedNews.created_at) }}</p>
+          <p class="text-lg text-gray-700 mb-6">{{ selectedNews.description }}</p>
+          <div class="text-gray-800 whitespace-pre-line leading-relaxed">
+            {{ selectedNews.text }}
           </div>
+          <button
+            @click="selectedNews = null"
+            class="inline-block mt-10 text-gray-700 hover:text-gray-900 border border-gray-300 px-4 py-2 rounded-lg transition"
+          >
+            ← Zurück zu allen News
+          </button>
         </div>
       </div>
 
-      <div v-else class="text-center text-gray-500 py-20">
-        Keine News vorhanden
+      <!-- Übersicht aller News -->
+      <div v-else-if="filteredNews.length" class="grid md:grid-cols-2 gap-8">
+        <article
+          v-for="news in filteredNews"
+          :key="news.id"
+          class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer"
+          @click="showDetails(news.id)"
+        >
+          <img
+            :src="news.image"
+            alt="News Bild"
+            class="w-full h-56 object-cover"
+          />
+          <div class="p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+              {{ news.title }}
+            </h2>
+            <p class="text-gray-600 mb-3">{{ news.description }}</p>
+            <p class="text-sm text-gray-500">{{ formatDate(news.created_at) }}</p>
+          </div>
+        </article>
       </div>
-    </section>
-  </div>
+
+      <!-- Keine News -->
+      <p v-else class="text-center text-gray-500 mt-8">
+        Keine aktuellen Neuigkeiten verfügbar.
+      </p>
+    </div>
+  </section>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, ref, computed } from "vue";
+import { useNewsStore } from "@/stores/News";
 
-const router = useRouter();
+const newsStore = useNewsStore();
+const selectedNews = ref(null);
 
-// Beispielhafte Daten
-const news = ref([
-  {
-    id: 1,
-    title: 'Neue Ausstellung angekündigt',
-    description: 'Thorsten Kasel präsentiert seine neue Ausstellung „Zwischen Linien“ im Kunstverein Leipzig.',
-    date: '2025-10-09',
-    image: 'https://place-hold.it/600x400',
-  },
-  {
-    id: 2,
-    title: 'Künstlergespräch',
-    description: 'Einblicke in den kreativen Prozess von Thorsten Kasel bei einem öffentlichen Künstlergespräch.',
-    date: '2025-09-25',
-    image: 'https://place-hold.it/600x400',
-  },
-]);
+onMounted(() => {
+  newsStore.fetchNews();
+});
 
-function goToDetail(id) {
-  router.push(`/news/${id}`);
-}
+const filteredNews = computed(() =>
+  newsStore.news.filter(item => item.isActive === 1)
+);
 
-// Datum nach deutschem Format
-function formatDate(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
+// Detailansicht anzeigen
+const showDetails = async (id) => {
+  const data = await newsStore.fetchNewsById(id);
+  selectedNews.value = data;
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("de-DE", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
 </script>
-
-<style scoped>
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>

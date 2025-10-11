@@ -1,202 +1,255 @@
 <template>
-  <div class="bg-gray-50 p-6">
+  <div class="bg-gray-50 p-6 min-h-screen">
     <div class="max-w-6xl mx-auto">
-      <!-- Header & Aktionen -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-        <h1 class="text-4xl font-serif font-bold text-gray-800">Bilder</h1>
+
+      <!-- Header & Filter -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+        <h1 class="text-4xl font-serif font-bold text-gray-800">Produkte</h1>
         <div class="flex flex-wrap gap-3">
           <button
-            v-if="page===0"
-            @click="page = 1"
-            class="bg-gray-800 text-white px-5 py-2 rounded-lg hover:bg-gray-700 shadow transition"
+            @click="page=1"
+            class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-300 shadow transition"
           >
-            + Neues Bild
+            + Neues Produkt
           </button>
+          <select v-model="selectedCategory" class="border border-gray-300 rounded-lg px-3 py-2">
+            <option value="">Alle Kategorien</option>
+            <option v-for="category in categoryStore.categories" :key="category.id" :value="category.id">{{ category.name }}</option>
+          </select>
+          <select v-model="filter" class="border border-gray-300 rounded-lg px-3 py-2">
+            <option value="all">Alle</option>
+            <option value="active">Aktiv</option>
+            <option value="inactive">Inaktiv</option>
+          </select>
+          <input type="text" v-model="keyword" placeholder="Suche..." class="border border-gray-300 rounded-lg px-3 py-2"/>
         </div>
       </div>
 
-      <!-- Tabellenansicht -->
-      <div v-if="page === 0" class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-x-auto">
-        <table class="min-w-full text-left">
-          <thead class="bg-gray-100 text-gray-700 uppercase text-sm tracking-wider">
-            <tr>
-              <th class="px-6 py-3">Titel</th>
-              <th class="px-6 py-3">Beschreibung</th>
-              <th class="px-6 py-3">Kategorie</th>
-              <th class="px-6 py-3 text-center">Aktiv</th>
-              <th class="px-6 py-3">Bild</th>
-              <th class="px-6 py-3 text-center">Aktionen</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="product in productStore.products?.data" :key="product.id" class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-3 text-gray-800">{{ product.title }}</td>
-              <td class="px-6 py-3 text-gray-600">{{ product.description }}</td>
-              <td class="px-6 py-3 text-gray-700">{{ product.category_id.name }}</td>
-              <td class="px-6 py-3 text-center">
-                <span
-                  class="px-2 py-1 rounded-full text-xs font-semibold"
-                  :class="product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                >
-                  {{ product.is_active ? 'Ja' : 'Nein' }}
-                </span>
-              </td>
-              <td class="px-6 py-3">
-                <img :src="product.image" class="w-24 h-24 object-cover rounded shadow-sm"/>
-              </td>
-              <td class="px-6 py-3 flex justify-center gap-2">
-                <button @click="openEditPage(product)" class="bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-700 transition">
-                  Bearbeiten
-                </button>
-                <button @click="deleteProduct(product.id)" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition">
-                  Löschen
-                </button>
-              </td>
-            </tr>
-            <tr v-if="!productStore.products?.data || productStore.products.data.length === 0">
-              <td colspan="6" class="text-center py-6 text-gray-500 italic">Keine Produkte vorhanden.</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Lade- / Fehleranzeige -->
+      <div v-if="productStore.loading" class="text-center text-gray-500 py-8">Lade Produkte...</div>
+      <div v-else-if="productStore.error" class="text-center text-red-600 py-8">{{ productStore.error.message || 'Fehler beim Laden' }}</div>
+
+      <!-- Kartenansicht -->
+      <div v-else-if="filteredProducts.length" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="product in filteredProducts" :key="product.id" class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition relative">
+
+          <!-- Bild & Details -->
+          <img :src="product.image" alt="Produktbild" class="w-full h-48 object-cover"/>
+          <div class="p-4 space-y-2">
+            <h2 class="text-xl font-semibold text-gray-800">{{ product.title }}</h2>
+            <p class="text-gray-600">{{ product.description }}</p>
+            <p class="text-sm text-gray-500">{{ product.category_id?.name }}</p>
+          </div>
+
+          <!-- isActive Toggle -->
+          <button
+            @click.stop="toggleActive(product.id)"
+            :class="product.is_active
+              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+              : 'bg-red-100 text-red-700 hover:bg-red-200'"
+            class="absolute top-3 right-3 px-3 py-1 rounded-full text-sm font-semibold transition"
+          >
+            {{ product.is_active ? 'Aktiv' : 'Inaktiv' }}
+          </button>
+
+          <!-- Aktionen -->
+          <div class="absolute bottom-3 right-3 flex gap-2">
+            <button @click.stop="openEditPage(product)" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition">Bearbeiten</button>
+            <button @click.stop="deleteProduct(product.id)" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition">Löschen</button>
+          </div>
+        </div>
       </div>
 
-      <!-- Neues / Bearbeiten Formular -->
+      <!-- Keine Produkte -->
+      <p v-else class="text-center text-gray-500 py-8">Keine Produkte vorhanden.</p>
+
+      <!-- Neues / Bearbeiten Modal -->
       <transition name="fade">
-        <div v-if="page===1 || page===2" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-          <div class="bg-white rounded-xl shadow-md max-w-lg w-full p-6">
+        <div v-if="page===1 || page===2" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 p-4">
+          <div class="bg-white rounded-2xl shadow-lg max-w-lg w-full p-6">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-2xl font-bold text-gray-800">
-                {{ page===1 ? 'Neues Bild anlegen' : 'Bild bearbeiten' }}
-              </h2>
+              <h2 class="text-2xl font-bold text-gray-800">{{ page===1 ? 'Neues Produkt' : 'Produkt bearbeiten' }}</h2>
               <button @click="page=0" class="text-gray-500 hover:text-gray-700 text-xl font-bold">×</button>
             </div>
 
-            <form @submit.prevent="page===1 ? storeImage() : updateImage()" class="space-y-4">
+            <!-- Bildvorschau -->
+            <img v-if="imagePreview || imageSelectionPreview" :src="imageSelectionPreview || imagePreview" class="w-full h-48 object-cover rounded-lg mb-4"/>
+
+            <form @submit.prevent="page===1 ? storeProduct() : updateProduct()" class="space-y-4">
               <div class="flex flex-col">
-                <label for="title" class="text-gray-700 font-medium mb-1">Titel</label>
-                <input id="title" v-model="title" type="text" placeholder="Titel eingeben"
-                       class="border border-gray-300 rounded p-3 focus:ring-2 focus:ring-gray-400 focus:outline-none" required/>
+                <label class="text-gray-700 font-medium mb-1">Titel</label>
+                <input v-model="title" type="text" placeholder="Titel eingeben"
+                       class="border border-gray-300 rounded p-3 focus:ring-2 focus:ring-gray-300 focus:outline-none" required/>
               </div>
 
               <div class="flex flex-col">
-                <label for="description" class="text-gray-700 font-medium mb-1">Beschreibung</label>
-                <input id="description" v-model="description" type="text" placeholder="Beschreibung eingeben"
-                       class="border border-gray-300 rounded p-3 focus:ring-2 focus:ring-gray-400 focus:outline-none"/>
+                <label class="text-gray-700 font-medium mb-1">Beschreibung</label>
+                <input v-model="description" type="text" placeholder="Beschreibung eingeben"
+                       class="border border-gray-300 rounded p-3 focus:ring-2 focus:ring-gray-300 focus:outline-none"/>
               </div>
 
               <div class="flex flex-col">
-                <label for="img_holder" class="text-gray-700 font-medium mb-1">Bild auswählen</label>
-                <input @change="handleImage" type="file" class="border border-gray-300 rounded p-3"/>
+                <label class="text-gray-700 font-medium mb-1">Bild auswählen</label>
+                <input type="file" @change="handleImage" class="border border-gray-300 rounded p-3"/>
               </div>
 
               <div class="flex flex-col">
-                <label for="categorySelection" class="text-gray-700 font-medium mb-1">Kategorie</label>
-                <select id="categorySelection" v-model="categorySelection" class="border border-gray-300 rounded p-3">
+                <label class="text-gray-700 font-medium mb-1">Kategorie</label>
+                <select v-model="categorySelection" class="border border-gray-300 rounded p-3">
                   <option value="">Bitte wählen...</option>
                   <option v-for="category in categoryStore.categories" :key="category.id" :value="category.id">{{ category.name }}</option>
                 </select>
               </div>
 
               <div class="flex items-center gap-3">
-                <input type="checkbox" id="isActive" v-model="isActive" class="w-4 h-4"/>
-                <label for="isActive" class="text-gray-700 font-medium">Aktiv</label>
+                <input type="checkbox" v-model="isActive" class="w-4 h-4"/>
+                <label class="text-gray-700 font-medium">Aktiv</label>
               </div>
 
               <div class="flex justify-end gap-3 pt-3 border-t">
                 <button type="button" @click="page=0" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition">Abbrechen</button>
-                <button type="submit" class="px-5 py-2 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition">
-                  {{ page===1 ? 'Anlegen' : 'Speichern' }}
-                </button>
+                <button type="submit" class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition">{{ page===1 ? 'Anlegen' : 'Speichern' }}</button>
               </div>
             </form>
           </div>
         </div>
       </transition>
 
+      <!-- Toast Notifications -->
+      <div class="fixed bottom-6 right-6 space-y-2 z-50">
+        <div
+          v-for="(toast, index) in toasts"
+          :key="index"
+          class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg shadow flex items-center justify-between min-w-[200px] transition-opacity"
+        >
+          {{ toast.message }}
+          <button @click="removeToast(index)" class="ml-2 text-gray-800 font-bold">×</button>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useProductStore } from '@/stores/Products'
 import { useCategoryStore } from '@/stores/Categories'
 
 const productStore = useProductStore()
 const categoryStore = useCategoryStore()
 
+// State
 const page = ref(0)
 const title = ref('')
 const description = ref('')
 const imageSelection = ref(null)
+const imageSelectionPreview = ref(null)
+const imagePreview = ref(null)
 const categorySelection = ref(null)
 const isActive = ref(true)
-const sort = ref('newest')
 const selectedCategory = ref('')
 const keyword = ref('')
+const filter = ref('all')
 
-function handleImage(event) {
-  imageSelection.value = event.target.files[0]
+// Toasts
+const toasts = ref([])
+const showToast = (message) => {
+  toasts.value.push({ message })
+  setTimeout(() => toasts.value.shift(), 3000)
+}
+const removeToast = (index) => toasts.value.splice(index, 1)
+
+// Load data
+const loadProducts = () => productStore.loadAllProducts(keyword.value, selectedCategory.value)
+onMounted(() => {
+  categoryStore.loadAllCategories()
+  loadProducts()
+})
+
+// Watchers
+watch([keyword, selectedCategory], loadProducts)
+
+// Filtered Products
+const filteredProducts = ref([])
+watch([() => productStore.products, filter], () => {
+  if (!productStore.products?.data) return
+  filteredProducts.value = productStore.products.data.filter(p => {
+    if (filter.value === 'active') return p.is_active
+    if (filter.value === 'inactive') return !p.is_active
+    return true
+  })
+}, { immediate: true })
+
+// Image handler
+const handleImage = e => {
+  const file = e.target.files[0]
+  if (file) {
+    imageSelection.value = file
+    imageSelectionPreview.value = URL.createObjectURL(file)
+  }
 }
 
-function openEditPage(product) {
+// Open Edit Modal
+const openEditPage = (product) => {
+  page.value = 2
   title.value = product.title
   description.value = product.description
   imageSelection.value = null
+  imageSelectionPreview.value = null
+  imagePreview.value = product.image
   categorySelection.value = product.category_id.id
   isActive.value = product.is_active
-  page.value = 2
 }
 
-async function storeImage() {
+// CRUD Functions
+const storeProduct = async () => {
   const formData = new FormData()
   formData.append('title', title.value)
   formData.append('description', description.value)
-  formData.append('image', imageSelection.value)
   formData.append('category_id', categorySelection.value)
   formData.append('is_active', isActive.value)
+  if(imageSelection.value) formData.append('image', imageSelection.value)
   await productStore.storeProduct(formData)
   resetForm()
+  showToast('Produkt erfolgreich angelegt!')
 }
 
-async function updateImage() {
+const updateProduct = async () => {
   const formData = new FormData()
   formData.append('title', title.value)
   formData.append('description', description.value)
-  if(imageSelection.value) formData.append('image', imageSelection.value)
   formData.append('category_id', categorySelection.value)
   formData.append('is_active', isActive.value)
+  if(imageSelection.value) formData.append('image', imageSelection.value)
   await productStore.updateProduct(formData)
   resetForm()
+  showToast('Produkt erfolgreich aktualisiert!')
 }
 
-async function deleteProduct(id) {
+const deleteProduct = async (id) => {
   if(!confirm('Produkt wirklich löschen?')) return
   await productStore.deleteProduct(id)
+  showToast('Produkt gelöscht!')
 }
 
-function resetForm() {
+const resetForm = () => {
   title.value = ''
   description.value = ''
   imageSelection.value = null
+  imageSelectionPreview.value = null
+  imagePreview.value = null
   categorySelection.value = null
   isActive.value = true
   page.value = 0
   loadProducts()
 }
 
-function loadProducts() {
-  productStore.loadAllProducts(keyword.value, selectedCategory.value, sort.value)
+// isActive Toggle
+const toggleActive = (id) => {
+  productStore.toggleActive(id)
+  showToast('Status geändert!')
 }
-
-onMounted(() => {
-  categoryStore.loadAllCategories()
-  loadProducts()
-})
-
-watch([keyword, selectedCategory, sort], () => {
-  loadProducts()
-})
 </script>
 
 <style scoped>
