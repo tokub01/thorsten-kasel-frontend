@@ -34,14 +34,14 @@ const exhibitionsData = [
     title: 'Zwischen Linien',
     description: 'Einzelausstellung im Kunstverein Leipzig mit Werken aus den Jahren 2024–2025.',
     date: '2025-10-15',
-    image: 'https://place-hold.it/800x400',
+    image: '/placeholder.gif',
   },
   {
     id: 2,
     title: 'Fokus Farbe',
     description: 'Gruppenausstellung mit Fokus auf experimentelle Farbkonzepte.',
     date: '2025-09-10',
-    image: 'https://place-hold.it/800x400',
+    image: '/placeholder.gif',
   },
 ];
 
