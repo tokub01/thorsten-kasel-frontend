@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-gray-50 min-h-screen">
+  <div class="bg-gray-100 min-h-screen">
     <!-- Hero / Slogan -->
-    <div class="relative w-full bg-gray-50">
+    <div class="relative w-full bg-gray-100">
       <div class="mx-auto py-16 text-center px-6">
         <h1 class="text-3xl sm:text-4xl font-serif font-bold text-gray-800 mb-6">
           Gesichter, Farbe, Identität – Kunst zwischen Realität und Traum
