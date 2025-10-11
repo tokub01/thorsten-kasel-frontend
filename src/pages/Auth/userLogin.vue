@@ -43,7 +43,7 @@
         <!-- Login Button -->
         <button
           type="submit"
-          class="w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 transition font-semibold shadow-md"
+          class="hover:cursor-pointer w-full bg-gray-800 text-white py-2 rounded-lg hover:bg-gray-700 transition font-semibold shadow-md"
         >
           Anmelden
         </button>
@@ -58,7 +58,7 @@
       <div class="mt-6 text-center">
         <router-link
           to="/"
-          class="text-sm text-gray-600 hover:text-gray-900 transition font-medium"
+          class="hover:cursor-pointer text-sm text-gray-600 hover:text-gray-900 transition font-medium"
         >
           ← Zurück zur Website
         </router-link>
