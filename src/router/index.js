@@ -75,7 +75,7 @@ router.beforeEach((to, from, next) => {
     }
 
     if (!to.matched.length) {
-        return loggedIn ? next('/products') : next('/works');
+        return loggedIn ? next('/home') : next('/');
     }
 
     next();

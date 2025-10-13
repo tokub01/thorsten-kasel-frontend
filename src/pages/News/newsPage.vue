@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-gray-100 py-12 px-6">
+  <section class="bg-gray-300 py-12 px-6">
     <div class="max-w-5xl mx-auto">
 
       <!-- Titel -->
@@ -84,7 +84,7 @@ onMounted(() => {
 });
 
 const filteredNews = computed(() =>
-  newsStore.news.filter(item => item.isActive === true)
+  newsStore.news.filter(item => item.isActive === 1)
 );
 
 // Detailansicht anzeigen

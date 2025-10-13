@@ -1,11 +1,17 @@
 <template>
-  <div class="bg-gray-100 min-h-screen">
-    <section class="mx-auto px-6 py-16">
+  <div class="bg-gray-300 min-h-screen">
+    <section class="mx-auto px-6 py-16 max-w-7xl">
       <h1 class="text-4xl font-serif font-bold text-gray-800 mb-6">Ausstellungen</h1>
       <p class="text-gray-600 mb-12">Eine Übersicht über die bisherigen und kommenden Ausstellungen von Thorsten Kasel.</p>
 
-      <div v-if="exhibitions.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="exh in exhibitions" :key="exh.id" class="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer" @click="goToDetail(exh.id)">
+      <!-- Karten -->
+      <div v-if="activeExhibitions.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div
+          v-for="exh in activeExhibitions"
+          :key="exh.id"
+          class="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden cursor-pointer"
+          @click="goToDetail(exh.id)"
+        >
           <img :src="exh.image" :alt="exh.title" class="w-full h-48 object-cover">
           <div class="p-4">
             <h2 class="text-lg font-semibold text-gray-800 mb-1">{{ exh.title }}</h2>
@@ -23,35 +29,29 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useExhibitionsStore } from '@/stores/Exhibitions';
 
 const router = useRouter();
+const store = useExhibitionsStore();
 
-// Beispielhafte Ausstellungen
-const exhibitions = ref([
-  {
-    id: 1,
-    title: 'Zwischen Linien',
-    description: 'Einzelausstellung im Kunstverein Leipzig mit Werken aus den Jahren 2024–2025.',
-    date: '2025-10-15',
-    image: '/placeholder.gif',
-  },
-  {
-    id: 2,
-    title: 'Fokus Farbe',
-    description: 'Gruppenausstellung mit Fokus auf experimentelle Farbkonzepte.',
-    date: '2025-09-10',
-    image: '/placeholder.gif',
-  },
-]);
+// Lade die Daten beim Mounten
+onMounted(() => {
+  store.fetchExhibitions();
+});
+
+// Nur aktive Ausstellungen
+const activeExhibitions = computed(() =>
+  store.exhibitions.filter(exh => exh.isActive)
+);
 
 function goToDetail(id) {
   router.push(`/exhibitions/${id}`);
 }
 
-// Datum nach deutschem Format
 function formatDate(dateStr) {
+  if (!dateStr) return '';
   const date = new Date(dateStr);
   return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }

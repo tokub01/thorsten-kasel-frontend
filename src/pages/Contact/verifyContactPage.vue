@@ -1,6 +1,6 @@
 <template>
 <div>
-    <div class="flex justify-center mt-10">
+    <div class="bg-gray-300 flex justify-center mt-10">
         {{store.errorMessage}}
         {{store.successMessage}}
     </div>

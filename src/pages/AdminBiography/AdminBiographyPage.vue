@@ -1,18 +1,29 @@
 <template>
-  <div class="bg-gray-50 min-h-screen py-12">
-    <div class="max-w-4xl mx-auto px-6">
-      <!-- Page Titel -->
-      <h1 class="text-4xl font-serif font-bold text-gray-800 text-center mb-6">
-        Vita / Künstlerischer Werdegang
-      </h1>
-      <p class="text-gray-600 text-center mb-12">
-        Hier können Sie die Vita bearbeiten und direkt eine Vorschau sehen.
-      </p>
+  <div class="min-h-screen bg-gray-300 px-4 py-10">
+    <div class="mx-auto bg-white shadow-lg rounded-xl p-8 max-w-4xl">
+      <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Vita bearbeiten</h1>
 
-      <!-- Editor Container -->
-      <div class="bg-white rounded-xl shadow-md overflow-hidden">
-        <!-- Toolbar -->
-        <div id="toolbar" class="bg-gray-100 border-b border-gray-300 px-4 py-2 flex flex-wrap gap-2">
+      <!-- Toast -->
+      <transition name="fade">
+        <div
+          v-if="toast.message"
+          :class="[
+            'fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg text-white z-50 transition',
+            toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+          ]"
+        >
+          {{ toast.message }}
+        </div>
+      </transition>
+
+      <!-- Loading -->
+      <div v-if="loading" class="text-center text-gray-600 py-10">
+        Lädt Biographie...
+      </div>
+
+      <!-- Editor -->
+      <div v-else>
+        <div id="toolbar" class="bg-gray-100 border-b border-gray-300 px-4 py-2 flex flex-wrap gap-2 rounded-t-xl">
           <select class="ql-header border rounded p-1">
             <option value="1"></option>
             <option value="2"></option>
@@ -22,108 +33,115 @@
           <button class="ql-italic px-2 py-1 rounded hover:bg-gray-200"></button>
           <button class="ql-underline px-2 py-1 rounded hover:bg-gray-200"></button>
           <button class="ql-link px-2 py-1 rounded hover:bg-gray-200"></button>
-          <button class="ql-list" value="ordered" px-2 py-1 rounded hover:bg-gray-200></button>
-          <button class="ql-list" value="bullet" px-2 py-1 rounded hover:bg-gray-200></button>
+          <button class="ql-list" value="ordered"></button>
+          <button class="ql-list" value="bullet"></button>
           <button class="ql-clean px-2 py-1 rounded hover:bg-gray-200"></button>
         </div>
 
-        <!-- Editor -->
-        <div ref="editor" class="editor p-6 min-h-[400px]"></div>
-      </div>
+        <div ref="editor" class="editor p-6 min-h-[400px] bg-white rounded-b-xl"></div>
 
-      <!-- Vorschau -->
-      <div class="mt-8 p-6 bg-white rounded-xl shadow-md">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Vorschau</h2>
-        <div v-html="content" class="prose max-w-full text-gray-700"></div>
+        <!-- Speichern -->
+        <div class="flex justify-end mt-6">
+          <button
+            @click="saveBiography"
+            class="bg-gray-800 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition"
+          >
+            Speichern
+          </button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
-import Quill from 'quill';
-import 'quill/dist/quill.snow.css';
+import { ref, onMounted, nextTick } from 'vue'
+import Quill from 'quill'
+import 'quill/dist/quill.snow.css'
+import { useUserStore } from '@/stores/Users'
 
-const editor = ref(null);
+const userStore = useUserStore()
+const editor = ref(null)
+const quill = ref(null)
+const loading = ref(true)
+const biography = ref('')
+const currentUser = ref(null)
+const toast = ref({ message: '', type: 'success' })
 
-const content = ref(`
-  <h2>Thorsten Kasel</h2>
-  <p><strong>Geboren:</strong> XXX in Duisburg<br>
-  <strong>Lebt und arbeitet:</strong> in Duisburg</p>
+function showToast(message, type = 'success') {
+  toast.value = { message, type }
+  setTimeout(() => (toast.value.message = ''), 3000)
+}
 
-  <h3>Künstlerischer Werdegang</h3>
-  <ul>
-    <li>2010 – 2015: Studium der Freien Kunst, Hochschule für Grafik und Buchkunst Leipzig</li>
-    <li>2015 – 2017: Meisterschülerin bei Prof. Max Beispiel</li>
-  </ul>
+async function loadBiography() {
+  try {
+    // Lade alle Benutzer mit der bestehenden index()-Methode
+    const users = await userStore.fetchUsers()
+    currentUser.value = users.find(u => u.email === 'thorsten.kasel@web.de')
 
-  <h3>Einzelausstellungen (Auswahl)</h3>
-  <ul>
-    <li>2023: „Zwischen Linien“, Galerie Blau, Berlin</li>
-    <li>2021: „Verlorene Räume“, Kunsthaus Dresden</li>
-    <li>2019: „Lichtfänger“, Projektraum West, Hamburg</li>
-  </ul>
+    if (currentUser.value && currentUser.value.biography) {
+      biography.value = currentUser.value.biography
+    } else {
+      biography.value = '<p>Noch keine Biographie vorhanden.</p>'
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Biographie:', error)
+    showToast('Fehler beim Laden der Biographie', 'error')
+  } finally {
+    loading.value = false
+  }
+}
 
-  <h3>Gruppenausstellungen (Auswahl)</h3>
-  <ul>
-    <li>2024: „Positionen der Gegenwart“, Kunstverein Leipzig</li>
-    <li>2022: „Fokus Frau“, Neue Galerie Nürnberg</li>
-    <li>2020: „Form und Fläche“, Kunsthalle Bremen</li>
-  </ul>
+async function saveBiography() {
+  try {
+    if (!currentUser.value) {
+      showToast('Benutzer nicht gefunden', 'error')
+      return
+    }
 
-  <h3>Stipendien & Auszeichnungen</h3>
-  <ul>
-    <li>2022: Arbeitsstipendium der Kulturstiftung des Freistaates Sachsen</li>
-    <li>2020: DAAD-Reisestipendium, Island</li>
-  </ul>
+    const newBio = quill.value.root.innerHTML
 
-  <h3>Mitgliedschaften & Projekte</h3>
-  <ul>
-    <li>Mitglied im BBK (Bund bildender Künstlerinnen und Künstler)</li>
-    <li>Seit 2021: Mitbegründerin des Künstlerkollektivs „raum_zwischen“</li>
-  </ul>
+    // Verwende hier die bestehende update()-Methode aus dem Store
+    await userStore.update(
+      currentUser.value.name,
+      currentUser.value.email,
+      null,
+      null,
+      newBio
+    )
 
-  <h3>Statement</h3>
-  <p>In meiner Arbeit beschäftige ich mich mit den Übergängen zwischen Erinnerung und Raum. Mittels Malerei, Installation und Zeichnung erforsche ich Fragmente des Alltäglichen und transformiere sie in poetische Bildwelten.</p>
-`);
+    showToast('Biographie erfolgreich gespeichert!')
+  } catch (error) {
+    console.error('Fehler beim Speichern:', error)
+    showToast('Fehler beim Speichern der Biographie', 'error')
+  }
+}
 
 onMounted(async () => {
-  await nextTick();
+  await loadBiography()
+
+  await nextTick()
   if (editor.value) {
-    const quill = new Quill(editor.value, {
+    quill.value = new Quill(editor.value, {
       theme: 'snow',
       modules: { toolbar: '#toolbar' }
-    });
-
-    quill.root.innerHTML = content.value;
-
-    quill.on('text-change', () => {
-      content.value = quill.root.innerHTML;
-    });
+    })
+    quill.value.root.innerHTML = biography.value
   }
-});
+})
 </script>
 
 <style scoped>
 .editor {
   min-height: 400px;
-  background: white;
-  border-bottom-left-radius: 0.5rem;
-  border-bottom-right-radius: 0.5rem;
 }
 
-.prose ul {
-  list-style-type: disc;
-  padding-left: 1.5rem;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
 }
-
-.prose h2, .prose h3 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.prose p {
-  margin-bottom: 1rem;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

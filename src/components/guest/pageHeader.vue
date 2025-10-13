@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-gray-100 shadow-sm">
+  <header class="bg-gray-300 shadow-sm">
     <div class=" mx-auto flex justify-between items-center px-6 py-6 md:py-8">
       <!-- Künstlername -->
       <div
