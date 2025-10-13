@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 min-h-screen p-6">
+  <div class="bg-gray-300 min-h-screen p-6">
     <div class="max-w-6xl mx-auto">
       <!-- Page Header -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">

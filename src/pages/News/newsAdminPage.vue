@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-gray-50 py-12 px-6 min-h-screen">
+  <section class="bg-gray-300 py-12 px-6 min-h-screen">
     <div class="max-w-6xl mx-auto">
 
       <!-- Header & Filter -->

@@ -3,7 +3,7 @@
 </script>
 
 <template>
-<div>
+<div class="bg-gray-300">
   Kontaktanfragen
 </div>
 </template>

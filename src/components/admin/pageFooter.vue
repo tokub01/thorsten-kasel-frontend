@@ -1,6 +1,6 @@
 
 <template>
-  <footer class="bg-gray-100 border-t shadow-sm mt-auto w-full">
+  <footer class="bg-gray-300 border-t shadow-sm mt-auto w-full">
     <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center text-gray-700">
       <!-- Rechtliches / Links -->
       <div class="flex flex-col md:flex-row gap-4 items-center text-sm">

@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6 md:p-10 bg-gray-100 min-h-screen">
+  <div class="p-6 md:p-10 bg-gray-300 min-h-screen">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
       <h1 class="text-3xl font-serif font-bold text-gray-800">Ausstellungen</h1>
       <button

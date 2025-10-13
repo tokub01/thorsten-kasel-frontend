@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 min-h-screen">
+  <div class="bg-gray-300 min-h-screen">
     <section class="max-w-4xl mx-auto px-6 py-16">
       <button @click="$router.push('/exhibitions')" class="text-gray-700 hover:text-gray-900 mb-6">
         ← Zurück zur Ausstellungsübersicht

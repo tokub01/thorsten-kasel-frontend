@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 min-h-screen py-12">
+  <div class="bg-gray-300 min-h-screen py-12">
     <div class="max-w-4xl mx-auto px-6">
       <!-- Page Titel -->
       <h1 class="text-4xl font-serif font-bold text-gray-800 text-center mb-6">

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col bg-gray-100 text-gray-800">
+  <div class="flex flex-col bg-gray-300 text-gray-800">
     <!-- Inhalt -->
     <main class="flex-grow">
       <div class="max-w-3xl mx-auto px-6 py-16 text-center">

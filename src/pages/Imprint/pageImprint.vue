@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-400 min-h-screen px-4 py-8 text-gray-800 max-w-3xl mx-auto">
+  <div class="bg-gray-300 min-h-screen px-4 py-8 text-gray-800 max-w-3xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Impressum</h1>
 
     <section class="mb-6">

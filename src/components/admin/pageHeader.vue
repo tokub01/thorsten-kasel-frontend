@@ -1,7 +1,7 @@
 <template>
   <!-- Desktop Sidebar -->
   <aside
-    class="hidden md:flex flex-col justify-between fixed left-0 top-0 bottom-0 w-60 bg-gray-100 border-r shadow-sm"
+    class="hidden md:flex flex-col justify-between fixed left-0 top-0 bottom-0 w-60 bg-gray-300 border-r shadow-sm"
   >
     <!-- Logo / Titel -->
     <div class="px-6 py-8 border-b text-center">
@@ -32,7 +32,7 @@
     <div class="border-t p-6">
       <button
         @click="handleLogout"
-        class="w-full px-4 py-2 rounded-lg text-gray-700 hover:bg-red-100 hover:text-red-600 transition-colors"
+        class="hover:cursor-pointer w-full px-4 py-2 rounded-lg text-gray-700 hover:bg-red-100 hover:text-red-600 transition-colors"
       >
         Logout
       </button>
@@ -83,7 +83,7 @@
 
       <button
         @click="handleLogout"
-        class="text-gray-700 hover:text-red-600 mt-6"
+        class="hover: cursor-pointer text-gray-700 hover:text-red-600 mt-6"
       >
         Logout
       </button>
