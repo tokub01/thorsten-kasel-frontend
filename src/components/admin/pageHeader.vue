@@ -1,8 +1,6 @@
 <template>
   <!-- Desktop Sidebar -->
-  <aside
-    class="hidden md:flex flex-col justify-between fixed left-0 top-0 bottom-0 w-60 bg-gray-300 border-r shadow-sm"
-  >
+  <aside class="hidden md:flex flex-col justify-between fixed left-0 top-0 bottom-0 w-60 bg-gray-300 border-r shadow-sm">
     <!-- Logo / Titel -->
     <div class="px-6 py-8 border-b text-center">
       <h1
@@ -20,9 +18,7 @@
         :key="link.to"
         :to="link.to"
         class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200"
-        :class="isActive(link.to)
-                  ? 'bg-gray-300 text-gray-900 font-semibold'
-                  : 'text-gray-700 hover:bg-gray-200 hover:text-gray-900'"
+        :class="isActive(link.to) ? activeClass : inactiveClass"
       >
         {{ link.label }}
       </router-link>
@@ -40,13 +36,9 @@
   </aside>
 
   <!-- Mobile Header -->
-  <header class="md:hidden w-full bg-gray-100 flex justify-between items-center px-4 py-4 border-b shadow-sm">
+  <header class="md:hidden w-full bg-gray-300 flex justify-between items-center px-4 py-4 border-b shadow-sm">
     <h1 class="text-xl font-serif font-bold text-gray-800">Admin Dashboard</h1>
-    <button
-      @click="toggleMenu"
-      class="text-3xl text-gray-700 focus:outline-none"
-      aria-label="Menü öffnen"
-    >
+    <button @click="toggleMenu" class="text-3xl text-gray-700 focus:outline-none" aria-label="Menü öffnen">
       <span v-if="!isOpen">☰</span>
       <span v-else>✖</span>
     </button>
@@ -54,11 +46,7 @@
 
   <!-- Mobile Overlay -->
   <transition name="fade">
-    <div
-      v-if="isOpen"
-      class="fixed inset-0 bg-black bg-opacity-30 z-30"
-      @click="closeMenu"
-    ></div>
+    <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-30 z-30" @click="closeMenu"></div>
   </transition>
 
   <!-- Mobile Sidebar -->
@@ -74,17 +62,14 @@
             :key="link.to + '-mobile'"
             :to="link.to"
             @click="closeMenu"
-            class="text-gray-700 hover:text-gray-900"
+            :class="isActive(link.to) ? activeClass : inactiveClass"
           >
             {{ link.label }}
           </router-link>
         </nav>
       </div>
 
-      <button
-        @click="handleLogout"
-        class="hover: cursor-pointer text-gray-700 hover:text-red-600 mt-6"
-      >
+      <button @click="handleLogout" class="hover:cursor-pointer text-gray-700 hover:text-red-600 mt-6">
         Logout
       </button>
     </aside>
@@ -102,8 +87,8 @@ const authStore = useAuthStore();
 
 const isOpen = ref(false);
 
-// Admin Links inklusive Ausstellungen & News
 const adminLinks = [
+  { to: '/admin', label: 'Home' },
   { to: '/categories', label: 'Kategorien' },
   { to: '/products', label: 'Bilder' },
   { to: '/adminBiography', label: 'Vita' },
@@ -112,9 +97,22 @@ const adminLinks = [
   { to: '/admin/newsPage', label: 'News' },
 ];
 
+const activeClass = 'bg-gray-300 text-gray-900 font-semibold';
+const inactiveClass = 'text-gray-700 hover:bg-gray-200 hover:text-gray-900';
+
 function toggleMenu() { isOpen.value = !isOpen.value; }
 function closeMenu() { isOpen.value = false; }
-function isActive(path) { return route.path.startsWith(path); }
+
+// Einheitliche Active-Logik wie bei anderen Links
+function isActive(path) {
+  const current = route.path.replace(/\/$/, ''); // Trailing Slash entfernen
+  const link = path.replace(/\/$/, '');
+
+  // Exakte Übereinstimmung oder Subroute (außer Home)
+  return link === '/admin'
+    ? current === '/admin' || current === ''
+    : current === link || current.startsWith(link + '/');
+}
 
 async function handleLogout() {
   try {
@@ -127,7 +125,6 @@ async function handleLogout() {
 </script>
 
 <style scoped>
-/* Slide-in Animation */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 

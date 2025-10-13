@@ -1,81 +1,86 @@
-import API from "./API";
+// src/stores/userStore.js
+import { defineStore } from 'pinia'
+import * as UserService from '@/services/Users'
 
-export async function index() {
-    try {
-        await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
+export const useUserStore = defineStore('user', {
+  state: () => ({
+    users: [],
+    user: null,
+    loading: false,
+    error: null,
+  }),
 
-        const response = await API.get(`${process.env.VUE_APP_API_URL}/api/users`);
+  actions: {
+    async fetchUsers() {
+      this.loading = true
+      this.error = null
+      try {
+        const data = await UserService.index()
+        this.users = data
+      } catch (error) {
+        console.error('Fehler beim Laden der Benutzer:', error)
+        this.error = error
+      } finally {
+        this.loading = false
+      }
+    },
 
-        return response.data;
-    } catch (error) {
-        console.error("Laden der Benutzer fehlgeschlagen.", error);
-        throw error;
-    }
-}
+    async fetchUser(user_id) {
+      this.loading = true
+      this.error = null
+      try {
+        const data = await UserService.show(user_id)
+        this.user = data
+      } catch (error) {
+        console.error('Fehler beim Laden des Benutzers:', error)
+        this.error = error
+      } finally {
+        this.loading = false
+      }
+    },
 
-export async function show(user_id) {
-    try {
-        await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
+    async fetchUserByEmail(email) {
+      this.loading = true
+      this.error = null
+      try {
+        const data = await UserService.index()
+        const found = data.find((u) => u.email === email)
+        if (!found) throw new Error(`Kein Benutzer mit E-Mail ${email} gefunden`)
+        this.user = found
+      } catch (error) {
+        console.error('Fehler beim Laden der Biographie:', error)
+        this.error = error
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
 
-        const response = await API.get(`${process.env.VUE_APP_API_URL}/api/users/${user_id}`);
+    async updateUserBiography(email, biography) {
+      this.loading = true
+      this.error = null
+      try {
+        if (!this.user || this.user.email !== email) {
+          await this.fetchUserByEmail(email)
+        }
 
-        return response.data;
-    } catch (error) {
-        console.error("Laden der Benutzer fehlgeschlagen.", error);
-        throw error;
-    }
-}
+        const res = await UserService.update(
+          this.user.name,
+          this.user.email,
+          null,
+          null,
+          biography
+        )
 
-export async function store(user_name, user_email, user_password, user_password_confirmation, user_biography) {
-    try {
-        await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/users`, {
-            email: user_email,
-            name: user_name,
-            password:user_password,
-            password_confirmation:user_password_confirmation,
-            biography: user_biography,
-        });
-
-        return response.data;
-    } catch (error) {
-        console.error("Laden der Benutzer fehlgeschlagen.", error);
-        throw error;
-    }
-}
-
-export async function update(user_name, user_email, user_password, user_password_confirmation, user_biography) {
-    try {
-        await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/users`, {
-            _method: "PUT",
-            email: user_email ?? null,
-            name: user_name ?? null,
-            password:user_password ?? null,
-            password_confirmation:user_password_confirmation ?? null,
-            biography: user_biography ?? null,
-        });
-
-        return response.data;
-    } catch (error) {
-        console.error("Laden der Benutzer fehlgeschlagen.", error);
-        throw error;
-    }
-}
-
-export async function destroy(user_id) {
-    try {
-        await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/users/${user_id}`, {
-            _method: "DELETE",
-        });
-
-        return response.data;
-    } catch (error) {
-        console.error("Laden der Benutzer fehlgeschlagen.", error);
-        throw error;
-    }
-}
+        this.user.biography = biography
+        return res
+      } catch (error) {
+        console.error('Fehler beim Aktualisieren der Biographie:', error)
+        this.error = error
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+  },
+})
