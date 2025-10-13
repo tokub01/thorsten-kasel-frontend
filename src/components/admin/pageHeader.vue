@@ -1,5 +1,5 @@
 <template>
-  <!-- Desktop Sidebar -->
+  <!-- Desktop Sidebar bleibt links wie bisher -->
   <aside class="hidden md:flex flex-col justify-between fixed left-0 top-0 bottom-0 w-60 bg-gray-300 border-r shadow-sm">
     <!-- Logo / Titel -->
     <div class="px-6 py-8 border-b text-center">
@@ -49,25 +49,36 @@
     <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-30 z-30" @click="closeMenu"></div>
   </transition>
 
-  <!-- Mobile Sidebar -->
-  <transition name="slide">
+  <!-- Mobile Sidebar von rechts -->
+  <transition name="slide-right">
     <aside
       v-if="isOpen"
-      class="fixed inset-y-0 left-0 w-64 bg-gray-100 z-40 p-6 flex flex-col justify-between shadow-lg"
+      class="fixed inset-y-0 right-0 w-64 bg-gray-100 z-40 p-6 flex flex-col justify-between shadow-lg"
+      @click.stop
     >
-      <div>
-        <nav class="flex flex-col space-y-6 text-lg mt-10">
-          <router-link
-            v-for="link in adminLinks"
-            :key="link.to + '-mobile'"
-            :to="link.to"
-            @click="closeMenu"
-            :class="isActive(link.to) ? activeClass : inactiveClass"
-          >
-            {{ link.label }}
-          </router-link>
-        </nav>
+      <!-- Header der Sidebar mit schönem Close Button -->
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-2xl font-serif font-semibold text-gray-800">Menü</h2>
+        <button
+          @click="closeMenu"
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-200 hover:bg-gray-300 shadow-md text-gray-700 text-2xl transition-all duration-200 hover:scale-110"
+          aria-label="Menü schließen"
+        >
+          ×
+        </button>
       </div>
+      <!-- Navigation Links -->
+      <nav class="flex flex-col space-y-6 text-lg">
+        <router-link
+          v-for="link in adminLinks"
+          :key="link.to + '-mobile'"
+          :to="link.to"
+          @click="closeMenu"
+          :class="isActive(link.to) ? activeClass : inactiveClass"
+        >
+          {{ link.label }}
+        </router-link>
+      </nav>
 
       <button @click="handleLogout" class="hover:cursor-pointer text-gray-700 hover:text-red-600 mt-6">
         Logout
@@ -103,12 +114,9 @@ const inactiveClass = 'text-gray-700 hover:bg-gray-200 hover:text-gray-900';
 function toggleMenu() { isOpen.value = !isOpen.value; }
 function closeMenu() { isOpen.value = false; }
 
-// Einheitliche Active-Logik wie bei anderen Links
 function isActive(path) {
-  const current = route.path.replace(/\/$/, ''); // Trailing Slash entfernen
+  const current = route.path.replace(/\/$/, '');
   const link = path.replace(/\/$/, '');
-
-  // Exakte Übereinstimmung oder Subroute (außer Home)
   return link === '/admin'
     ? current === '/admin' || current === ''
     : current === link || current.startsWith(link + '/');
@@ -125,12 +133,14 @@ async function handleLogout() {
 </script>
 
 <style scoped>
+/* Fade Overlay Animation */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease; }
-.slide-enter-from { transform: translateX(-100%); }
-.slide-enter-to { transform: translateX(0); }
-.slide-leave-from { transform: translateX(0); }
-.slide-leave-to { transform: translateX(-100%); }
+/* Slide from Right Animation */
+.slide-right-enter-active, .slide-right-leave-active { transition: transform 0.3s ease; }
+.slide-right-enter-from { transform: translateX(100%); }
+.slide-right-enter-to { transform: translateX(0); }
+.slide-right-leave-from { transform: translateX(0); }
+.slide-right-leave-to { transform: translateX(100%); }
 </style>

@@ -35,7 +35,7 @@ export const useAuthStore = defineStore('user', {
             try {
                 this.user = await register(email, name, password, password_confirmation);
                 localStorage.setItem('authToken', this.user.token);
-                router.push({ name: 'products' });
+                router.push({ name: 'home' });
             } catch (error) {
                 if (error.response?.status === 422) {
                     this.errors = error.response.data.errors;
