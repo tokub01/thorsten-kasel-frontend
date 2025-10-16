@@ -41,21 +41,18 @@
             <p class="text-sm text-gray-500">{{ product.category_id?.name }}</p>
           </div>
 
-          <!-- isActive Toggle -->
-          <button
-            @click.stop="toggleActive(product.id)"
-            :class="product.is_active
-              ? 'bg-green-100 text-green-700 hover:bg-green-200'
-              : 'bg-red-100 text-red-700 hover:bg-red-200'"
-            class="absolute top-3 right-3 px-3 py-1 rounded-full text-sm font-semibold transition"
-          >
-            {{ product.is_active ? 'Aktiv' : 'Inaktiv' }}
-          </button>
+          <!-- isActive Badge -->
+          <span
+            :class="product.isActive === 1
+              ? 'absolute top-3 right-3 px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-700'
+              : 'absolute top-3 right-3 px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-700'">
+            {{ product.isActive === 1 ? 'Aktiv' : 'Inaktiv' }}
+          </span>
 
           <!-- Aktionen -->
           <div class="absolute bottom-3 right-3 flex gap-2">
             <button @click.stop="openEditPage(product)" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition">Bearbeiten</button>
-            <button @click.stop="deleteProduct(product.id)" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition">Löschen</button>
+            <button @click.stop="deleteProduct(product.id, product.image)" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition">Löschen</button>
           </div>
         </div>
       </div>
@@ -102,7 +99,7 @@
               </div>
 
               <div class="flex items-center gap-3">
-                <input type="checkbox" v-model="isActive" class="w-4 h-4"/>
+                <input type="checkbox" :checked="isActive===1" @change="isActive = $event.target.checked ? 1 : 0" class="w-4 h-4"/>
                 <label class="text-gray-700 font-medium">Aktiv</label>
               </div>
 
@@ -141,13 +138,14 @@ const categoryStore = useCategoryStore()
 
 // State
 const page = ref(0)
+const id = ref('')
 const title = ref('')
 const description = ref('')
 const imageSelection = ref(null)
 const imageSelectionPreview = ref(null)
 const imagePreview = ref(null)
 const categorySelection = ref(null)
-const isActive = ref(true)
+const isActive = ref(1)
 const selectedCategory = ref('')
 const keyword = ref('')
 const filter = ref('all')
@@ -175,8 +173,8 @@ const filteredProducts = ref([])
 watch([() => productStore.products, filter], () => {
   if (!productStore.products?.data) return
   filteredProducts.value = productStore.products.data.filter(p => {
-    if (filter.value === 'active') return p.is_active
-    if (filter.value === 'inactive') return !p.is_active
+    if (filter.value === 'active') return p.isActive === 1
+    if (filter.value === 'inactive') return p.isActive === 0
     return true
   })
 }, { immediate: true })
@@ -193,13 +191,14 @@ const handleImage = e => {
 // Open Edit Modal
 const openEditPage = (product) => {
   page.value = 2
+  id.value = product.id
   title.value = product.title
   description.value = product.description
   imageSelection.value = null
   imageSelectionPreview.value = null
   imagePreview.value = product.image
   categorySelection.value = product.category_id.id
-  isActive.value = product.is_active
+  isActive.value = product.isActive ? 1 : 0
 }
 
 // CRUD Functions
@@ -208,7 +207,7 @@ const storeProduct = async () => {
   formData.append('title', title.value)
   formData.append('description', description.value)
   formData.append('category_id', categorySelection.value)
-  formData.append('is_active', isActive.value)
+  formData.append('isActive', isActive.value)
   if(imageSelection.value) formData.append('image', imageSelection.value)
   await productStore.storeProduct(formData)
   resetForm()
@@ -220,17 +219,23 @@ const updateProduct = async () => {
   formData.append('title', title.value)
   formData.append('description', description.value)
   formData.append('category_id', categorySelection.value)
-  formData.append('is_active', isActive.value)
+  formData.append('isActive', isActive.value)
   if(imageSelection.value) formData.append('image', imageSelection.value)
-  await productStore.updateProduct(formData)
+  await productStore.updateProduct(id.value, formData)
   resetForm()
   showToast('Produkt erfolgreich aktualisiert!')
 }
 
-const deleteProduct = async (id) => {
+// Delete Product inklusive Bild
+const deleteProduct = async (productId) => {
   if(!confirm('Produkt wirklich löschen?')) return
-  await productStore.deleteProduct(id)
-  showToast('Produkt gelöscht!')
+  try {
+    await productStore.removeProduct(productId)
+    showToast('Produkt gelöscht!')
+  } catch(e) {
+    console.error(e)
+    showToast('Fehler beim Löschen!')
+  }
 }
 
 const resetForm = () => {
@@ -240,15 +245,9 @@ const resetForm = () => {
   imageSelectionPreview.value = null
   imagePreview.value = null
   categorySelection.value = null
-  isActive.value = true
+  isActive.value = 1
   page.value = 0
   loadProducts()
-}
-
-// isActive Toggle
-const toggleActive = (id) => {
-  productStore.toggleActive(id)
-  showToast('Status geändert!')
 }
 </script>
 

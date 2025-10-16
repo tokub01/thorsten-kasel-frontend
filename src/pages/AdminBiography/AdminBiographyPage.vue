@@ -1,9 +1,10 @@
 <template>
   <div class="min-h-screen bg-gray-300 px-4 py-10">
     <div class="mx-auto bg-white shadow-lg rounded-xl p-8 max-w-4xl">
-      <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Vita bearbeiten</h1>
+      <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">
+        Vita bearbeiten
+      </h1>
 
-      <!-- Toast -->
       <transition name="fade">
         <div
           v-if="toast.message"
@@ -16,14 +17,15 @@
         </div>
       </transition>
 
-      <!-- Loading -->
       <div v-if="loading" class="text-center text-gray-600 py-10">
         Lädt Biographie...
       </div>
 
-      <!-- Editor -->
       <div v-else>
-        <div id="toolbar" class="bg-gray-100 border-b border-gray-300 px-4 py-2 flex flex-wrap gap-2 rounded-t-xl">
+        <div
+          id="toolbar"
+          class="bg-gray-100 border-b border-gray-300 px-4 py-2 flex flex-wrap gap-2 rounded-t-xl"
+        >
           <select class="ql-header border rounded p-1">
             <option value="1"></option>
             <option value="2"></option>
@@ -40,7 +42,6 @@
 
         <div ref="editor" class="editor p-6 min-h-[400px] bg-white rounded-b-xl"></div>
 
-        <!-- Speichern -->
         <div class="flex justify-end mt-6">
           <button
             @click="saveBiography"
@@ -65,7 +66,6 @@ const editor = ref(null)
 const quill = ref(null)
 const loading = ref(true)
 const biography = ref('')
-const currentUser = ref(null)
 const toast = ref({ message: '', type: 'success' })
 
 function showToast(message, type = 'success') {
@@ -75,18 +75,17 @@ function showToast(message, type = 'success') {
 
 async function loadBiography() {
   try {
-    // Lade alle Benutzer mit der bestehenden index()-Methode
-    const users = await userStore.fetchUsers()
-    currentUser.value = users.find(u => u.email === 'thorsten.kasel@web.de')
+    loading.value = true
 
-    if (currentUser.value && currentUser.value.biography) {
-      biography.value = currentUser.value.biography
-    } else {
-      biography.value = '<p>Noch keine Biographie vorhanden.</p>'
-    }
+    // ID des Users, dessen Biografie bearbeitet wird
+    const userId = 1 // ggf. dynamisch anpassen
+
+    const data = await userStore.fetchBiography(userId)
+    biography.value = data.biography || '<p>Noch keine Biographie vorhanden.</p>'
   } catch (error) {
     console.error('Fehler beim Laden der Biographie:', error)
     showToast('Fehler beim Laden der Biographie', 'error')
+    biography.value = '<p>Noch keine Biographie vorhanden.</p>'
   } finally {
     loading.value = false
   }
@@ -94,18 +93,20 @@ async function loadBiography() {
 
 async function saveBiography() {
   try {
-    if (!currentUser.value) {
-      showToast('Benutzer nicht gefunden', 'error')
-      return
-    }
+    if (!quill.value) return
 
     const newBio = quill.value.root.innerHTML
 
-    // Verwende hier die bestehende update()-Methode aus dem Store
-    await userStore.update(
-      currentUser.value.name,
-      currentUser.value.email,
-      null,
+    // ID des Users (gleich wie beim Laden)
+    const userId = 1
+
+    // fetchUser um E-Mail und Name zu bekommen
+    const userData = await userStore.fetchUser(userId)
+
+    await userStore.updateUser(
+      userId,
+      userData.data.email,
+      userData.data.name,
       null,
       newBio
     )

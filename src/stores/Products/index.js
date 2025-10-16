@@ -49,11 +49,11 @@ export const useProductStore = defineStore('products', {
                 this.loading = false;
             }
         },
-        async updateProduct(formData) {
+        async updateProduct(product_id, formData) {
             this.loading = true;
             this.errors = [];
             try {
-                this.products = await update(formData);
+                this.products = await update(product_id, formData);
             } catch (error) {
                 if (error.response?.status === 422) {
                     this.errors = error.response.data.errors;

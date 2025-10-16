@@ -46,18 +46,18 @@ export async function store(formData) {
     }
 }
 
-export async function update(product_title, product_description, product_image, category_id, isActive) {
+export async function update(product_id, formData) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/products`, {
+        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/products/${product_id}`, {
             _method: "PUT",
-            title: product_title ?? null,
-            description: product_description ?? null,
-            image: product_image ?? null,
-            price: 0.00,
-            category_id: category_id ?? null,
-            isActive: isActive ?? null,
+                'title': formData.get('title'),
+                'description':formData.get('description'),
+                'image': formData.get('image'),
+                'price': 0.00,
+                'category_id': formData.get('category_id'),
+                'isActive': formData.get('isActive'),
         });
 
         return response.data;
