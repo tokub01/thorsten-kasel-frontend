@@ -100,7 +100,7 @@ const isModalOpen = ref(false);
 const currentIndex = ref(0);
 
 const activeProducts = computed(() => {
-  return productStore.products?.data?.filter(p => p.is_active) || [];
+  return productStore.products?.data?.filter(p => p.isActive) || [];
 });
 
 const currentImage = computed(() => {

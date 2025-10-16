@@ -4,7 +4,7 @@ import router from '@/router';
 const axiosInstance = axios.create({
     baseURL: process.env.VUE_APP_API_URL + "/api",
     timeout: 1000,
-    headers: { 'Content-Type': 'multipart/form-data',  Authorization: `Bearer ${localStorage.getItem('authToken')}` },
+    headers: { 'Content-Type': 'multipart/form-data'},
     withCredentials: true,
 });
 
@@ -15,6 +15,11 @@ function getCookie(name) {
 }
 axiosInstance.interceptors.request.use(
     function (config) {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const xsrfToken = getCookie('XSRF-TOKEN');
         if (xsrfToken) {
             config.headers['X-XSRF-TOKEN'] = xsrfToken;

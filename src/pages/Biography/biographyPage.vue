@@ -3,7 +3,11 @@
     <div class="mx-auto bg-white shadow-lg rounded-xl p-8 max-w-4xl">
       <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Vita</h1>
 
-      <div v-if="biography" v-html="biography" class="prose text-gray-700"></div>
+      <div v-if="loading" class="text-gray-500 text-center py-10">
+        Biographie wird geladen...
+      </div>
+
+      <div v-else-if="biography" v-html="biography" class="prose text-gray-700"></div>
 
       <div v-else class="text-gray-500 text-center py-10">
         Biographie ist noch nicht verfügbar.
@@ -18,14 +22,19 @@ import { useUserStore } from '@/stores/Users';
 
 const userStore = useUserStore();
 const biography = ref('');
+const loading = ref(true);
 
 onMounted(async () => {
   try {
-    await userStore.fetchUsers();
-    const user = userStore.users.find(u => u.email === 'thorsten.kasel@web.de');
-    biography.value = user?.biography || '';
+    // ID des Users, dessen Biografie angezeigt werden soll
+    const userId = 1; // <-- hier ggf. dynamisch setzen
+    const data = await userStore.fetchBiography(userId);
+    biography.value = data.biography || '';
   } catch (err) {
     console.error('Fehler beim Laden der Biographie', err);
+    biography.value = '';
+  } finally {
+    loading.value = false;
   }
 });
 </script>
