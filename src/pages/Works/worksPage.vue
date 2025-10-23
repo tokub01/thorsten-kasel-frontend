@@ -55,7 +55,7 @@
           <!-- Inhalt -->
           <div class="flex flex-col md:flex-row">
             <!-- Bild -->
-            <div class="md:w-1/2 bg-black flex items-center justify-center p-4 relative">
+            <div class="md:w-1/2 bg-white flex items-center justify-center  p-4 relative">
               <img
                 :src="currentImage.image"
                 :alt="currentImage.title"
