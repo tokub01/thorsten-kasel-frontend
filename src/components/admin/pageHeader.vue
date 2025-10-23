@@ -117,9 +117,15 @@ function closeMenu() { isOpen.value = false; }
 function isActive(path) {
   const current = route.path.replace(/\/$/, '');
   const link = path.replace(/\/$/, '');
-  return link === '/admin'
-    ? current === '/admin' || current === ''
-    : current === link || current.startsWith(link + '/');
+
+  // Für Home: Nur exakt /admin matchen
+  if (link === '/admin') {
+    return current === '/admin' || current === '';
+  }
+
+  // Für alle anderen: Exakte Match oder Unterseiten
+  // ABER: nur wenn es nach dem Pfad ein "/" kommt (echte Unterseite)
+  return current === link || current.startsWith(link + '/');
 }
 
 async function handleLogout() {
