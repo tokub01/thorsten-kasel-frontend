@@ -49,11 +49,11 @@ export const useCategoryStore = defineStore('categories', {
                 this.loading = false;
             }
         },
-        async updateCategory(categoryId, categoryName) {
+        async updateCategory(productId, categoryId, categoryName) {
             this.loading = true;
             this.errors = [];
             try {
-                this.categories = await update(categoryId, categoryName);
+                this.categories = await update(productId, categoryId, categoryName);
             } catch (error) {
                 if (error.response?.status === 422) {
                     this.errors = error.response.data.errors;

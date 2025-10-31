@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 flex items-center justify-center px-4 py-12">
+  <div class="min-h-screen bg-gradient-to-br  flex items-center justify-center px-4 py-12">
     <div class="max-w-2xl w-full">
 
       <!-- Header -->
@@ -151,11 +151,11 @@
       <div class="mt-8 text-center">
         <p class="text-sm text-gray-600 mb-3">Oder kontaktiere mich direkt:</p>
         <a
-          href="mailto:info@velwebsolutions.de"
+          href="mailto:thorsten.kasel@web.de"
           class="inline-flex items-center gap-2 text-gray-800 hover:text-gray-600 transition font-medium"
         >
           <Mail class="w-4 h-4" />
-          info@velwebsolutions.de
+          thorsten.kasel@web.de
         </a>
       </div>
     </div>
@@ -216,7 +216,7 @@ const loadRecaptcha = () => new Promise(resolve => {
   window.contactRecaptchaInit = () => {
     window.grecaptcha.ready(() => {
       recaptchaId = window.grecaptcha.render(recaptchaContainer.value, {
-        sitekey: import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+        sitekey: process.env.VUE_APP_RECAPTCHA_KEY,
         size: 'invisible'
       });
       resolve();

@@ -1,6 +1,6 @@
 // stores/contact.js
 import { defineStore } from 'pinia'
-import { submit, verify } from '@/services/Contact'
+import {getContactRequests, submit, updateContactRequest, verify} from '@/services/Contact'
 
 export const useContactStore = defineStore('contact', {
   state: () => ({
@@ -8,6 +8,7 @@ export const useContactStore = defineStore('contact', {
     loading: false,
     successMessage: '',
     errorMessage: '',
+    contactRequests: [],
   }),
 
   actions: {
@@ -39,7 +40,7 @@ export const useContactStore = defineStore('contact', {
       // stores/contact.js
       try {
         const res = await verify(token)
-        this.successMessage = res.message || 'E-Mail erfolgreich verifiziert!'  // 🔥
+        this.successMessage = res.message || 'E-Mail erfolgreich verifiziert!'
       } catch (error) {
         if (error.response?.status === 422) {
           this.errors = error.response.data.errors || []
@@ -51,5 +52,36 @@ export const useContactStore = defineStore('contact', {
         }
       }
     },
+    async getContactRequests() {
+      this.loading = true
+      this.errors = []
+      this.errorMessage = ''
+      this.successMessage = ''
+      // stores/contact.js
+      try {
+        this.contactRequests =  await getContactRequests()
+        this.loading = false
+        this.successMessage = 'Kontaktanfragen erfolgreich geladen'
+      } catch (error) {
+        this.loading=false
+        console.log(error)
+      }
+    },
+    async updateContactRequest(contactRequestId) {
+      this.loading = true
+      this.errors = []
+      this.errorMessage = ''
+      this.successMessage = ''
+      // stores/contact.js
+      try {
+        this.contactRequests =  await updateContactRequest(contactRequestId)
+        this.loading = false
+        this.getContactRequests()
+        this.successMessage = 'Kontaktanfragen erfolgreich geladen'
+      } catch (error) {
+        this.loading = false
+        console.log(error)
+      }
+    }
   },
 })

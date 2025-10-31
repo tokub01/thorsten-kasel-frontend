@@ -22,7 +22,7 @@ onMounted(() => {
 
     try{
         token.value =  route.params.token
-        store.verify(token)
+        store.verify(token.value)
     }catch(e){
         console.error(e)
     }

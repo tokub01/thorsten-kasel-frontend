@@ -318,7 +318,7 @@ const editMode = ref(false);
 const showDeleteModal = ref(false);
 const exhibitionToDelete = ref(null);
 
-const form = ref({ title: "", description: "", image: "", text: "" });
+const form = ref({ id: "", title: "", description: "", image: "", text: "" });
 const imageFile = ref(null);
 const imagePreview = ref(null);
 
@@ -359,7 +359,7 @@ function openViewModal(exhibition) {
 
 function openCreateModal() {
   editMode.value = false;
-  form.value = { title: "", description: "", image: "", text: "" };
+  form.value = { id: "", title: "", description: "", image: "", text: "" };
   imageFile.value = null;
   imagePreview.value = null;
   modal.value = { visible: true, type: "edit" };
@@ -407,7 +407,7 @@ async function saveExhibition() {
     if (imageFile.value) fd.append("image", imageFile.value);
 
     if (editMode.value) {
-      await store.updateExhibition(form.value.title, form.value.description, imageFile.value, form.value.text);
+      await store.updateExhibition(form.value.id, form.value.title, form.value.description, imageFile.value, form.value.text);
       showToast("Ausstellung erfolgreich aktualisiert!", "success");
     } else {
       await store.createExhibition(fd);

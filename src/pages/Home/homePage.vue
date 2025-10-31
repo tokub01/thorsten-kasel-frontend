@@ -154,46 +154,6 @@
           </router-link>
         </div>
       </div>
-
-      <!-- Letzte Aktivitäten -->
-      <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Clock class="w-5 h-5 text-gray-600" />
-          Letzte Aktivitäten
-        </h3>
-        <div class="space-y-3">
-          <div v-if="latestNews" class="flex items-start gap-3 pb-3 border-b">
-            <div class="p-2 bg-blue-50 rounded-lg">
-              <Newspaper class="w-4 h-4 text-blue-600" />
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-800">{{ latestNews.title }}</p>
-              <p class="text-xs text-gray-500">{{ formatDate(latestNews.created_at) }}</p>
-            </div>
-          </div>
-          <div v-if="latestExhibition" class="flex items-start gap-3 pb-3 border-b">
-            <div class="p-2 bg-purple-50 rounded-lg">
-              <ImageIcon class="w-4 h-4 text-purple-600" />
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-800">{{ latestExhibition.title }}</p>
-              <p class="text-xs text-gray-500">{{ formatDate(latestExhibition.created_at) }}</p>
-            </div>
-          </div>
-          <div v-if="latestProduct" class="flex items-start gap-3">
-            <div class="p-2 bg-green-50 rounded-lg">
-              <Package class="w-4 h-4 text-green-600" />
-            </div>
-            <div class="flex-1">
-              <p class="text-sm font-medium text-gray-800">{{ latestProduct.title }}</p>
-              <p class="text-xs text-gray-500">Neues Produkt</p>
-            </div>
-          </div>
-          <p v-if="!latestNews && !latestExhibition && !latestProduct" class="text-sm text-gray-500 italic text-center py-4">
-            Keine aktuellen Aktivitäten
-          </p>
-        </div>
-      </div>
     </div>
 
     <!-- Wichtige Hinweise -->
@@ -217,25 +177,6 @@
               Jetzt bearbeiten
               <ArrowRight class="w-4 h-4" />
             </router-link>
-          </div>
-        </div>
-      </div>
-
-      <!-- Info: Inaktive Inhalte -->
-      <div v-if="inactiveCount > 0" class="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
-        <div class="flex items-start gap-3">
-          <div class="p-2 bg-yellow-100 rounded-lg">
-            <EyeOff class="w-5 h-5 text-yellow-600" />
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-semibold text-yellow-900 mb-1">Inaktive Inhalte</h3>
-            <p class="text-sm text-yellow-700 mb-2">
-              {{ inactiveCount }} Inhalt{{ inactiveCount === 1 ? ' ist' : 'e sind' }} derzeit inaktiv und nicht öffentlich sichtbar.
-            </p>
-            <div class="flex gap-2 text-xs text-yellow-700">
-              <span v-if="inactiveProducts > 0">• {{ inactiveProducts }} Produkt{{ inactiveProducts === 1 ? '' : 'e' }}</span>
-              <span v-if="inactiveNewsCount > 0">• {{ inactiveNewsCount }} News</span>
-            </div>
           </div>
         </div>
       </div>
@@ -266,7 +207,7 @@ import { useProductStore } from '@/stores/Products'
 import { useCategoryStore } from '@/stores/Categories'
 import {
   LayoutDashboard, ImageIcon, Newspaper, Package, Mail, Tag, Zap,
-  Plus, Edit2, Clock, AlertCircle, EyeOff, CheckCircle2, ArrowRight
+  Plus, Edit2, AlertCircle, CheckCircle2, ArrowRight
 } from 'lucide-vue-next'
 
 const exhibitionsStore = useExhibitionsStore()
@@ -296,29 +237,10 @@ const inactiveCount = computed(() => {
   return inactiveProducts.value + inactiveNewsCount.value
 })
 
-const latestNews = computed(() => {
-  return newsStore.news?.[0] || null
-})
-
-const latestExhibition = computed(() => {
-  return exhibitionsStore.exhibitions?.[0] || null
-})
-
-const latestProduct = computed(() => {
-  return productStore.products?.data?.[0] || null
-})
 
 // Methoden
 function getProductCountByCategory(categoryId) {
   return productStore.products?.data?.filter(p => p.category_id?.id === categoryId).length || 0
-}
-
-function formatDate(dateString) {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('de-DE', {
-    day: '2-digit',
-    month: 'short'
-  })
 }
 
 // Daten beim Laden abrufen

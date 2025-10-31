@@ -36,11 +36,12 @@ export async function store(category_name){
     }
 }
 
-export async function update(category_id, category_name){
+export async function update(product_id, category_id, category_name){
     try{
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
         const response = await API.post(`${process.env.VUE_APP_API_URL}/api/categories/${category_id}`, {
             _method: "PUT",
+            product_id: product_id,
             name: category_name,
         });
         return response.data.data;

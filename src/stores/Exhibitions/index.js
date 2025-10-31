@@ -56,11 +56,11 @@ export const useExhibitionsStore = defineStore("exhibitions", {
       }
     },
 
-    async updateExhibition(title, description, image, text) {
+    async updateExhibition(id, title, description, image, text) {
       this.loading = true;
       this.error = null;
       try {
-        const data = await ExhibitionsService.update(title, description, image, text);
+        const data = await ExhibitionsService.update(id, title, description, image, text);
         // Optional: update currentExhibition oder Liste
         this.currentExhibition = data;
         return data;

@@ -9,7 +9,7 @@
       </h1>
       <div class="flex items-center gap-3">
         <span class="text-sm text-gray-600">
-          {{ store.errors?.length || 0 }} unbearbeitet{{ (store.errors?.length || 0) === 1 ? 'e' : '' }} Anfrage{{ (store.errors?.length || 0) === 1 ? '' : 'n' }}
+          {{ requests.length }} unbearbeitet{{ requests.length === 1 ? 'e' : '' }} Anfrage{{ requests.length === 1 ? '' : 'n' }}
         </span>
       </div>
     </div>
@@ -27,9 +27,9 @@
     </div>
 
     <!-- Kartenansicht der Anfragen -->
-    <div v-else-if="store.errors && store.errors.length" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else-if="requests.length" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
-        v-for="(req, index) in store.errors"
+        v-for="(req, index) in requests"
         :key="index"
         class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group hover:-translate-y-1"
         @click="openModal(req, index)"
@@ -152,13 +152,6 @@
               <CheckCircle2 class="w-4 h-4" />
               Als erledigt markieren
             </button>
-            <button
-              @click="confirmDelete(selectedIndex)"
-              class="px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2"
-            >
-              <Trash2 class="w-4 h-4" />
-              Löschen
-            </button>
           </div>
         </div>
       </div>
@@ -220,7 +213,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useContactStore } from '@/stores/Contact'
 import {
   MailOpen, User, Mail, FileText, MessageSquare, Shield, CheckCircle2,
@@ -229,6 +222,10 @@ import {
 } from 'lucide-vue-next'
 
 const store = useContactStore()
+
+// Computed property für die Anfragen
+let requests = computed(() => store.contactRequests?.data || [])
+requests = requests.value.filter((item) => {return item.isRead === false})
 
 // Modal
 const modalOpen = ref(false)
@@ -259,31 +256,62 @@ const closeModal = () => {
   selectedIndex.value = null
 }
 
-const confirmDelete = () => {
-  showDeleteModal.value = true
-}
-
 // "Als erledigt markieren"
-const markDone = (index) => {
-  if (store.errors && store.errors[index]) {
-    store.errors.splice(index, 1)
-    closeModal()
-    showToast('Kontaktanfrage als erledigt markiert!', 'success')
+const markDone = async (index) => {
+  try {
+    if (requests.value && requests.value[index]) {
+      //const request = requests.value[index]
+
+      // Hier könntest du eine API-Anfrage machen, um den Status zu aktualisieren
+      // await store.markRequestAsDone(request.id)
+
+      // Lokales Entfernen aus der Liste
+      store.updateContactRequest(store.contactRequests.data[index]["id"])
+
+      store.contactRequests.data.splice(index, 1)
+      closeModal()
+      showToast('Kontaktanfrage als erledigt markiert!', 'success')
+    }
+  } catch (error) {
+    console.error('Fehler beim Markieren als erledigt:', error)
+    showToast('Fehler beim Markieren der Anfrage', 'error')
   }
 }
 
 // Löschen
-const deleteRequest = () => {
-  if (store.errors && store.errors[selectedIndex.value]) {
-    store.errors.splice(selectedIndex.value, 1)
-    showDeleteModal.value = false
-    closeModal()
-    showToast('Kontaktanfrage gelöscht!', 'success')
+const deleteRequest = async () => {
+  try {
+    if (requests.value && requests.value[selectedIndex.value]) {
+      //const request = requests.value[selectedIndex.value]
+
+      // Hier könntest du eine API-Anfrage machen, um die Anfrage zu löschen
+      // await store.deleteRequest(request.id)
+
+      // Lokales Entfernen aus der Liste
+      store.errors.splice(selectedIndex.value, 1)
+      showDeleteModal.value = false
+      closeModal()
+      showToast('Kontaktanfrage gelöscht!', 'success')
+    }
+  } catch (error) {
+    console.error('Fehler beim Löschen:', error)
+    showToast('Fehler beim Löschen der Anfrage', 'error')
   }
 }
 
-onMounted(() => {
-  if (!store.errors) store.errors = []
+// Lade die Anfragen beim Mounten
+onMounted(async () => {
+  try {
+    await store.getContactRequests()
+
+    // Fallback: Falls errors nicht initialisiert ist
+    if (!store.errors) {
+      store.errors = []
+    }
+  } catch (error) {
+    console.error('Fehler beim Laden der Kontaktanfragen:', error)
+    showToast('Fehler beim Laden der Anfragen', 'error')
+  }
 })
 </script>
 
