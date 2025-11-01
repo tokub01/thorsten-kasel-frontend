@@ -44,11 +44,11 @@ export async function store(formData) {
     }
 }
 
-export async function update(news_title, news_description, news_image, news_text) {
+export async function update(news_id, news_title, news_description, news_image, news_text) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/news`, {
+        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/news/${news_id}`, {
             _method: "PUT",
             title: news_title ?? null,
             description: news_description ?? null,
