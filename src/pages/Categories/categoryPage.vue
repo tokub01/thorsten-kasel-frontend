@@ -1,130 +1,193 @@
 <template>
-  <div class="bg-gray-300 min-h-screen p-3 sm:p-6">
+  <div class="bg-gray-300 p-4 md:p-8 min-h-screen">
     <div class="max-w-7xl mx-auto">
+
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
-          <Tag class="w-6 h-6 sm:w-8 sm:h-8 text-gray-700" />
-          Kategorien
-        </h1>
-        <button
-          @click="openCreateModal"
-          class="bg-gray-900 hover:bg-gray-800 text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 w-full sm:w-fit font-medium text-sm sm:text-base"
-        >
-          <Plus class="w-4 h-4 sm:w-5 sm:h-5" />
-          Neue Kategorie
-        </button>
+      <div class="mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <div class="p-2 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl shadow-lg">
+                <Tag class="w-8 h-8 text-white" />
+              </div>
+              Kategorien
+            </h1>
+            <p class="text-gray-600">Verwalte deine Produkt-Kategorien</p>
+          </div>
+          <button
+            @click="openCreateModal"
+            class="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 font-semibold shadow-lg"
+          >
+            <Plus class="w-5 h-5" />
+            <span>Neue Kategorie</span>
+          </button>
+        </div>
+
+        <!-- Stats Card -->
+        <div class="bg-white rounded-2xl shadow-md p-4 md:p-6 border border-gray-100">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="text-center p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl">
+              <p class="text-2xl md:text-3xl font-bold text-indigo-600">{{ categories.length }}</p>
+              <p class="text-xs md:text-sm text-gray-600 font-medium mt-1">Kategorien</p>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+              <p class="text-2xl md:text-3xl font-bold text-blue-600">{{ allProducts.length }}</p>
+              <p class="text-xs md:text-sm text-gray-600 font-medium mt-1">Produkte</p>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
+              <p class="text-2xl md:text-3xl font-bold text-purple-600">{{ categoriesWithImages }}</p>
+              <p class="text-xs md:text-sm text-gray-600 font-medium mt-1">Mit Bildern</p>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl">
+              <p class="text-2xl md:text-3xl font-bold text-pink-600">{{ categoriesWithProducts }}</p>
+              <p class="text-xs md:text-sm text-gray-600 font-medium mt-1">Verknüpft</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- Kategorien-Grid/Cards -->
-      <div class="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+      <!-- Main Content Card -->
+      <div class="bg-white shadow-md rounded-2xl border border-gray-100 overflow-hidden">
         <!-- Loading State -->
-        <div v-if="isLoading" class="text-center py-12 sm:py-16">
-          <Loader2 class="w-8 h-8 sm:w-10 sm:h-10 text-gray-400 animate-spin mx-auto mb-3" />
-          <p class="text-gray-600 font-medium text-sm sm:text-base">Lädt Kategorien...</p>
+        <div v-if="isLoading" class="flex flex-col items-center justify-center py-20">
+          <div class="relative">
+            <Loader2 class="w-16 h-16 text-indigo-600 animate-spin" />
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="w-12 h-12 bg-indigo-100 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <p class="text-gray-600 font-semibold mt-6 text-lg">Lädt Kategorien...</p>
         </div>
 
         <!-- Error State -->
-        <div v-else-if="error" class="text-center py-12 sm:py-16 px-4">
-          <AlertCircle class="w-8 h-8 sm:w-10 sm:h-10 text-red-500 mx-auto mb-3" />
-          <p class="text-red-600 font-medium text-sm sm:text-base">{{ error }}</p>
-          <button @click="loadData" class="mt-4 text-xs sm:text-sm text-gray-600 hover:text-gray-900 underline">
+        <div v-else-if="error" class="text-center py-20 px-4">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle class="w-8 h-8 text-red-600" />
+          </div>
+          <p class="text-red-600 font-semibold text-lg mb-2">{{ error }}</p>
+          <button @click="loadData" class="mt-4 px-6 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition font-semibold">
             Erneut versuchen
           </button>
         </div>
 
-        <!-- Desktop Table (hidden on mobile) -->
-        <table v-else class="hidden md:table min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Bild
-              </th>
-              <th scope="col" class="px-6 py-3.5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                Name
-              </th>
-              <th scope="col" class="px-6 py-3.5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-64">
-                Aktionen
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr
-              v-for="category in categories"
-              :key="category.id"
-              class="hover:bg-gray-50 transition-colors"
-            >
-              <!-- Bild -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="h-14 w-14 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
-                  <img
-                    v-if="getCategoryImage(category)"
-                    :src="getCategoryImage(category)"
-                    :alt="category.name"
-                    class="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                  <div v-else class="h-full w-full flex items-center justify-center text-xs text-gray-400 font-medium">
-                    N/A
+        <!-- Desktop Table -->
+        <div v-else class="hidden md:block overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+              <tr>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Bild
+                </th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Kategorie
+                </th>
+                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Produkt
+                </th>
+                <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                  Aktionen
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr
+                v-for="(category, index) in categories"
+                :key="category.id"
+                class="hover:bg-gray-50 transition-colors"
+                :style="`animation: fadeInUp 0.3s ease-out ${index * 0.05}s both`"
+              >
+                <!-- Bild -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="h-16 w-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-200 shadow-sm">
+                    <img
+                      v-if="getCategoryImage(category)"
+                      :src="getCategoryImage(category)"
+                      :alt="category.name"
+                      class="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                    <div v-else class="h-full w-full flex items-center justify-center">
+                      <ImageIcon class="w-6 h-6 text-gray-400" />
+                    </div>
                   </div>
-                </div>
-              </td>
+                </td>
 
-              <!-- Name & Produkt Info -->
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <Tag class="w-4 h-4 text-gray-500 flex-shrink-0" />
-                  <span class="font-medium text-gray-900">{{ category.name }}</span>
-                </div>
-                <p v-if="category.product?.name || category.product_id" class="text-sm text-gray-500 mt-1 ml-6">
-                  Produkt: {{ category.product?.name || `#${category.product_id}` }}
-                </p>
-              </td>
+                <!-- Kategorie Name -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="p-2 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-lg">
+                      <Tag class="w-4 h-4 text-indigo-600" />
+                    </div>
+                    <span class="font-bold text-gray-900 text-lg">{{ category.name }}</span>
+                  </div>
+                </td>
 
-              <!-- Aktionen -->
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex justify-center gap-2">
+                <!-- Produkt Info -->
+                <td class="px-6 py-4">
+                  <div v-if="category.product?.name || category.product_id" class="flex items-center gap-2">
+                    <Package class="w-4 h-4 text-gray-500" />
+                    <span class="text-sm text-gray-700 font-medium">
+                      {{ category.product?.name || `#${category.product_id}` }}
+                    </span>
+                  </div>
+                  <span v-else class="text-sm text-gray-400 italic">Nicht verknüpft</span>
+                </td>
+
+                <!-- Aktionen -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex justify-center gap-2">
+                    <button
+                      @click="openEditModal(category)"
+                      class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all text-sm font-semibold shadow-sm hover:shadow-md"
+                    >
+                      <Edit2 class="w-4 h-4" />
+                      Bearbeiten
+                    </button>
+                    <button
+                      @click="handleDelete(category)"
+                      :disabled="deletingIds.has(category.id)"
+                      class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 text-red-600 rounded-xl hover:from-red-100 hover:to-red-200 transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                    >
+                      <Loader2 v-if="deletingIds.has(category.id)" class="w-4 h-4 animate-spin" />
+                      <Trash2 v-else class="w-4 h-4" />
+                      Löschen
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Empty State -->
+              <tr v-if="categories.length === 0">
+                <td colspan="4" class="text-center py-20">
+                  <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <Tag class="w-10 h-10 text-gray-400" />
+                  </div>
+                  <p class="text-gray-500 text-xl font-semibold mb-2">Noch keine Kategorien vorhanden</p>
+                  <p class="text-gray-400 text-sm mb-6">Erstelle deine erste Kategorie mit dem Button oben</p>
                   <button
-                    @click="openEditModal(category)"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                    @click="openCreateModal"
+                    class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all font-semibold"
                   >
-                    <Edit2 class="w-4 h-4" />
-                    Bearbeiten
+                    <Plus class="w-5 h-5" />
+                    Erste Kategorie erstellen
                   </button>
-                  <button
-                    @click="handleDelete(category)"
-                    :disabled="deletingIds.has(category.id)"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Loader2 v-if="deletingIds.has(category.id)" class="w-4 h-4 animate-spin" />
-                    <Trash2 v-else class="w-4 h-4" />
-                    Löschen
-                  </button>
-                </div>
-              </td>
-            </tr>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-            <!-- Empty State -->
-            <tr v-if="categories.length === 0">
-              <td colspan="3" class="text-center py-20">
-                <Tag class="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p class="text-gray-600 text-lg font-medium mb-2">Noch keine Kategorien vorhanden</p>
-                <p class="text-gray-400 text-sm">Erstelle deine erste Kategorie mit dem Button oben</p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Mobile Cards (visible only on mobile) -->
+        <!-- Mobile Cards -->
         <div v-if="!isLoading && !error" class="md:hidden divide-y divide-gray-200">
           <div
-            v-for="category in categories"
+            v-for="(category, index) in categories"
             :key="category.id"
             class="p-4 hover:bg-gray-50 transition-colors"
+            :style="`animation: fadeInUp 0.3s ease-out ${index * 0.05}s both`"
           >
-            <div class="flex items-start gap-3 mb-3">
+            <div class="flex items-start gap-3 mb-4">
               <!-- Bild -->
-              <div class="h-16 w-16 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 shadow-sm flex-shrink-0">
+              <div class="h-20 w-20 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-200 shadow-sm flex-shrink-0">
                 <img
                   v-if="getCategoryImage(category)"
                   :src="getCategoryImage(category)"
@@ -132,20 +195,26 @@
                   class="h-full w-full object-cover"
                   loading="lazy"
                 />
-                <div v-else class="h-full w-full flex items-center justify-center text-xs text-gray-400 font-medium">
-                  N/A
+                <div v-else class="h-full w-full flex items-center justify-center">
+                  <ImageIcon class="w-8 h-8 text-gray-400" />
                 </div>
               </div>
 
-              <!-- Name & Info -->
+              <!-- Info -->
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <Tag class="w-4 h-4 text-gray-500 flex-shrink-0" />
-                  <h3 class="font-semibold text-gray-900 truncate">{{ category.name }}</h3>
+                <div class="flex items-center gap-2 mb-2">
+                  <div class="p-1.5 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-lg">
+                    <Tag class="w-3.5 h-3.5 text-indigo-600" />
+                  </div>
+                  <h3 class="font-bold text-gray-900 truncate text-lg">{{ category.name }}</h3>
                 </div>
-                <p v-if="category.product?.name || category.product_id" class="text-xs text-gray-500 ml-6">
-                  Produkt: {{ category.product?.name || `#${category.product_id}` }}
-                </p>
+                <div v-if="category.product?.name || category.product_id" class="flex items-center gap-2">
+                  <Package class="w-3.5 h-3.5 text-gray-500" />
+                  <p class="text-xs text-gray-600 truncate">
+                    {{ category.product?.name || `Produkt #${category.product_id}` }}
+                  </p>
+                </div>
+                <p v-else class="text-xs text-gray-400 italic ml-5">Kein Produkt</p>
               </div>
             </div>
 
@@ -153,7 +222,7 @@
             <div class="flex gap-2">
               <button
                 @click="openEditModal(category)"
-                class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all text-sm font-semibold"
               >
                 <Edit2 class="w-4 h-4" />
                 Bearbeiten
@@ -161,7 +230,7 @@
               <button
                 @click="handleDelete(category)"
                 :disabled="deletingIds.has(category.id)"
-                class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                class="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 bg-gradient-to-r from-red-50 to-red-100 text-red-600 rounded-xl hover:from-red-100 hover:to-red-200 transition-all text-sm font-semibold disabled:opacity-50"
               >
                 <Loader2 v-if="deletingIds.has(category.id)" class="w-4 h-4 animate-spin" />
                 <Trash2 v-else class="w-4 h-4" />
@@ -172,9 +241,18 @@
 
           <!-- Empty State Mobile -->
           <div v-if="categories.length === 0" class="text-center py-16 px-4">
-            <Tag class="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
-            <p class="text-gray-600 text-base sm:text-lg font-medium mb-2">Noch keine Kategorien vorhanden</p>
-            <p class="text-gray-400 text-xs sm:text-sm">Erstelle deine erste Kategorie mit dem Button oben</p>
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Tag class="w-8 h-8 text-gray-400" />
+            </div>
+            <p class="text-gray-500 text-lg font-semibold mb-2">Keine Kategorien</p>
+            <p class="text-gray-400 text-sm mb-6">Erstelle deine erste Kategorie</p>
+            <button
+              @click="openCreateModal"
+              class="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all font-semibold"
+            >
+              <Plus class="w-5 h-5" />
+              Kategorie erstellen
+            </button>
           </div>
         </div>
       </div>
@@ -185,53 +263,55 @@
       <transition name="modal">
         <div
           v-if="showModal"
-          class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
-          @click.self="closeModal"
+          @click="closeModal"
+          class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
         >
-          <div class="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+          <div @click.stop class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full md:max-w-5xl max-h-[95vh] md:max-h-[90vh] overflow-hidden flex flex-col">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between gap-3 sm:gap-4 p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
-              <h2 class="text-lg sm:text-2xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
-                <component :is="editMode ? Edit2 : Plus" class="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
-                <span class="hidden sm:inline">{{ editMode ? 'Kategorie bearbeiten' : 'Neue Kategorie' }}</span>
-                <span class="sm:hidden">{{ editMode ? 'Bearbeiten' : 'Neu' }}</span>
+            <div class="flex items-center justify-between gap-4 p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100">
+              <h2 class="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl">
+                  <component :is="editMode ? Edit2 : Plus" class="w-5 h-5 text-white" />
+                </div>
+                {{ editMode ? 'Kategorie bearbeiten' : 'Neue Kategorie' }}
               </h2>
-
               <button
                 @click="closeModal"
-                class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition"
+                class="text-gray-400 hover:text-gray-600 hover:bg-gray-200 p-2 rounded-xl transition"
               >
-                <X class="w-5 h-5" />
+                <X class="w-6 h-6" />
               </button>
             </div>
 
             <!-- Modal Body -->
-            <form @submit.prevent="handleSubmit" class="flex-1 overflow-hidden flex flex-col">
+            <div class="flex-1 overflow-hidden flex flex-col">
               <div class="flex-1 overflow-y-auto">
                 <!-- Form Section -->
-                <div class="p-4 sm:p-6 space-y-4 sm:space-y-6 border-b border-gray-200">
+                <div class="p-6 space-y-6 border-b border-gray-200">
                   <!-- Category Name -->
                   <div>
-                    <label for="categoryName" class="block text-sm font-semibold text-gray-700 mb-2">
-                      Kategoriename *
+                    <label for="categoryName" class="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                      <Tag class="w-4 h-4 text-indigo-600" />
+                      Kategoriename <span class="text-red-500">*</span>
                     </label>
                     <input
                       id="categoryName"
                       v-model="form.name"
                       type="text"
                       placeholder="z.B. Landschaften, Porträts..."
-                      class="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm sm:text-base"
+                      class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                       required
                     />
                   </div>
 
                   <!-- Selected Product Preview -->
                   <div v-if="form.selectedProduct" class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">
+                    <label class="block text-sm font-bold text-gray-700 flex items-center gap-2">
+                      <CheckCircle2 class="w-4 h-4 text-green-600" />
                       Ausgewähltes Produkt
                     </label>
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                      <div class="h-12 w-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                    <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
+                      <div class="h-14 w-14 rounded-xl overflow-hidden bg-white flex-shrink-0 shadow-sm">
                         <img
                           v-if="form.selectedProduct.image"
                           :src="form.selectedProduct.image"
@@ -240,47 +320,49 @@
                         />
                       </div>
                       <div class="flex-1 min-w-0">
-                        <p class="font-medium text-gray-900 truncate text-sm">
+                        <p class="font-bold text-gray-900 truncate">
                           {{ form.selectedProduct.name || `Produkt #${getProductId(form.selectedProduct)}` }}
                         </p>
-                        <p class="text-xs text-gray-500">ID: {{ getProductId(form.selectedProduct) }}</p>
+                        <p class="text-xs text-gray-600">ID: {{ getProductId(form.selectedProduct) }}</p>
                       </div>
                       <button
                         type="button"
                         @click="form.selectedProduct = null"
-                        class="text-gray-400 hover:text-gray-600 p-1.5 hover:bg-white rounded transition"
+                        class="text-gray-400 hover:text-red-600 p-2 hover:bg-white rounded-lg transition"
                       >
-                        <X class="w-4 h-4" />
+                        <X class="w-5 h-5" />
                       </button>
                     </div>
                   </div>
                 </div>
 
                 <!-- Products Section -->
-                <div class="p-4 sm:p-6">
+                <div class="p-6">
                   <!-- Search & Header -->
                   <div class="space-y-3 mb-4">
                     <div class="flex items-center justify-between">
-                      <label class="block text-sm font-semibold text-gray-700">
+                      <label class="block text-sm font-bold text-gray-700 flex items-center gap-2">
+                        <Package class="w-4 h-4 text-indigo-600" />
                         Produkt auswählen
                       </label>
                       <button
                         type="button"
                         @click="loadProducts"
-                        class="text-xs text-gray-500 hover:text-gray-700 underline"
+                        class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1"
                       >
+                        <RefreshCw class="w-3.5 h-3.5" />
                         Neu laden
                       </button>
                     </div>
 
                     <!-- Search Input -->
                     <div class="relative">
-                      <Search class="w-4 h-4 sm:w-5 sm:h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <Search class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                       <input
                         v-model="searchQuery"
                         type="text"
                         placeholder="Produkte durchsuchen..."
-                        class="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
+                        class="w-full pl-10 pr-10 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                       />
                       <button
                         v-if="searchQuery"
@@ -288,50 +370,54 @@
                         type="button"
                         class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        <X class="w-4 h-4" />
+                        <X class="w-5 h-5" />
                       </button>
                     </div>
 
-                    <p class="text-xs sm:text-sm text-gray-600">
-                      {{ displayedProducts.length }}
-                      {{ displayedProducts.length === 1 ? 'Produkt' : 'Produkte' }}
-                      {{ hasSearchQuery ? '(gefiltert)' : '(gesamt)' }}
-                    </p>
+                    <div class="flex items-center gap-2 text-sm">
+                      <span class="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full font-bold">
+                        {{ displayedProducts.length }}
+                      </span>
+                      <span class="text-gray-600">
+                        {{ displayedProducts.length === 1 ? 'Produkt' : 'Produkte' }}
+                        {{ hasSearchQuery ? 'gefunden' : 'verfügbar' }}
+                      </span>
+                    </div>
                   </div>
 
                   <!-- Products Loading -->
-                  <div v-if="productsLoading" class="text-center py-8 sm:py-12">
-                    <Loader2 class="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 animate-spin mx-auto mb-3" />
-                    <p class="text-gray-600 text-xs sm:text-sm">Produkte werden geladen...</p>
+                  <div v-if="productsLoading" class="text-center py-12">
+                    <Loader2 class="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-3" />
+                    <p class="text-gray-600 font-medium">Produkte werden geladen...</p>
                   </div>
 
                   <!-- Products Error -->
-                  <div v-else-if="productsError" class="text-center py-8 sm:py-12">
-                    <AlertCircle class="w-6 h-6 sm:w-8 sm:h-8 text-red-400 mx-auto mb-3" />
-                    <p class="text-red-600 text-xs sm:text-sm mb-2">{{ productsError }}</p>
+                  <div v-else-if="productsError" class="text-center py-12">
+                    <AlertCircle class="w-12 h-12 text-red-400 mx-auto mb-3" />
+                    <p class="text-red-600 font-medium mb-2">{{ productsError }}</p>
                     <button
                       type="button"
                       @click="loadProducts"
-                      class="text-xs text-gray-600 hover:text-gray-900 underline"
+                      class="text-sm text-indigo-600 hover:text-indigo-700 font-semibold underline"
                     >
                       Erneut versuchen
                     </button>
                   </div>
 
                   <!-- Products List -->
-                  <div v-else-if="displayedProducts.length > 0" class="space-y-2">
+                  <div v-else-if="displayedProducts.length > 0" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                     <button
                       v-for="product in displayedProducts"
                       :key="getProductId(product)"
                       type="button"
                       @click="toggleProductSelection(product)"
-                      class="w-full flex items-center gap-3 sm:gap-4 p-2.5 sm:p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
+                      class="w-full flex items-center gap-4 p-3 border-2 rounded-xl transition-all"
                       :class="{
-                        'ring-2 ring-gray-900 bg-gray-50': isProductSelected(product),
-                        'hover:border-gray-300': !isProductSelected(product)
+                        'border-indigo-500 bg-gradient-to-r from-indigo-50 to-indigo-100 shadow-md': isProductSelected(product),
+                        'border-gray-200 hover:border-gray-300 hover:bg-gray-50': !isProductSelected(product)
                       }"
                     >
-                      <div class="h-12 w-16 sm:h-14 sm:w-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
+                      <div class="h-14 w-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
                         <img
                           v-if="product.image"
                           :src="product.image"
@@ -341,7 +427,7 @@
                         />
                       </div>
                       <div class="flex-1 min-w-0 text-left">
-                        <p class="font-medium text-gray-900 truncate text-sm">
+                        <p class="font-bold text-gray-900 truncate">
                           {{ product.name || `Produkt #${getProductId(product)}` }}
                         </p>
                         <p class="text-xs text-gray-500">ID: {{ getProductId(product) }}</p>
@@ -349,54 +435,54 @@
                       <div class="flex-shrink-0">
                         <span
                           v-if="isProductSelected(product)"
-                          class="px-2 sm:px-3 py-1 bg-gray-900 text-white text-xs font-medium rounded-full"
+                          class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-full flex items-center gap-1"
                         >
-                          ✓
+                          <CheckCircle2 class="w-3.5 h-3.5" />
+                          Ausgewählt
                         </span>
                         <span
                           v-else
-                          class="px-2 sm:px-3 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full"
+                          class="px-3 py-1.5 bg-gray-200 text-gray-700 text-xs font-semibold rounded-full"
                         >
-                          <span class="hidden sm:inline">Auswählen</span>
-                          <span class="sm:hidden">+</span>
+                          Auswählen
                         </span>
                       </div>
                     </button>
                   </div>
 
                   <!-- Products Empty State -->
-                  <div v-else class="text-center py-8 sm:py-12">
-                    <Tag class="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-3" />
-                    <p class="text-gray-600 text-sm">
+                  <div v-else class="text-center py-12">
+                    <Package class="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p class="text-gray-600 font-medium">
                       {{ hasSearchQuery ? 'Keine Produkte gefunden' : 'Keine Produkte vorhanden' }}
                     </p>
-                    <p class="text-gray-400 text-xs mt-2">
+                    <p class="text-gray-400 text-sm mt-2">
                       Bitte überprüfe deine Produktdatenbank
                     </p>
                   </div>
                 </div>
               </div>
 
-              <!-- Form Actions (sticky bottom) -->
-              <div class="flex gap-2 sm:gap-3 p-4 sm:p-6 border-t border-gray-200 bg-white flex-shrink-0">
+              <!-- Form Actions -->
+              <div class="flex gap-3 p-6 border-t border-gray-200 bg-white">
                 <button
                   type="button"
                   @click="closeModal"
-                  class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm sm:text-base"
+                  class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-semibold"
                 >
                   Abbrechen
                 </button>
                 <button
-                  type="submit"
+                  @click="handleSubmit"
                   :disabled="isSubmitting || !form.name.trim()"
-                  class="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+                  class="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-xl hover:shadow-xl transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-                  <Save v-else class="w-4 h-4" />
+                  <Loader2 v-if="isSubmitting" class="w-5 h-5 animate-spin" />
+                  <Save v-else class="w-5 h-5" />
                   {{ editMode ? 'Speichern' : 'Erstellen' }}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </transition>
@@ -404,24 +490,24 @@
 
     <!-- Toast Notifications -->
     <teleport to="body">
-      <div class="fixed top-4 right-4 left-4 sm:left-auto z-50 space-y-2 sm:max-w-sm">
+      <div class="fixed top-4 right-4 md:top-6 md:right-6 z-[60] space-y-2 max-w-sm">
         <transition-group name="toast">
           <div
             v-for="toast in toasts"
             :key="toast.id"
             :class="[
-              'flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg shadow-lg text-white font-medium text-sm sm:text-base',
-              toast.type === 'success' ? 'bg-green-600' :
-              toast.type === 'error' ? 'bg-red-600' : 'bg-gray-900'
+              'flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-white font-semibold backdrop-blur-sm',
+              toast.type === 'success' ? 'bg-green-600/95' :
+              toast.type === 'error' ? 'bg-red-600/95' : 'bg-gray-800/95'
             ]"
           >
             <component
               :is="toast.type === 'success' ? CheckCircle2 : toast.type === 'error' ? XCircle : AlertCircle"
-              class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+              class="w-5 h-5 flex-shrink-0"
             />
             <span class="flex-1">{{ toast.message }}</span>
-            <button @click="removeToast(toast.id)" class="hover:bg-white/20 rounded p-1 transition">
-              <X class="w-3 h-3 sm:w-4 sm:h-4" />
+            <button @click="removeToast(toast.id)" class="hover:bg-white/20 rounded-lg p-1.5 transition">
+              <X class="w-4 h-4" />
             </button>
           </div>
         </transition-group>
@@ -431,25 +517,36 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useCategoryStore } from '@/stores/Categories'
 import { useProductStore } from '@/stores/Products'
-import { Plus, Edit2, Trash2, X, Save, Tag, Loader2, AlertCircle, XCircle, CheckCircle2, Search } from 'lucide-vue-next'
+import {
+  Plus, Edit2, Trash2, X, Save, Tag, Loader2, AlertCircle, XCircle,
+  CheckCircle2, Search, Package, ImageIcon, RefreshCw
+} from 'lucide-vue-next'
 
 /* STORES */
 const categoryStore = useCategoryStore()
 const productStore = useProductStore()
 
-/* DEBUG MODE */
-const debugMode = ref(false)
-
 /* CATEGORIES */
-const categories = computed(() => categoryStore.categories ?? [])
+const categories = computed(() => {
+  const cats = categoryStore.categories
+  return Array.isArray(cats) ? cats : []
+})
 const isLoading = computed(() => categoryStore.loading)
 const error = computed(() => {
   const errors = categoryStore.errors
   return Array.isArray(errors) && errors.length ? errors[0] : null
 })
+
+/* STATS */
+const categoriesWithImages = computed(() =>
+  categories.value.filter(c => getCategoryImage(c)).length
+)
+const categoriesWithProducts = computed(() =>
+  categories.value.filter(c => c.product_id || c.product).length
+)
 
 /* PRODUCTS */
 const productsLoading = ref(false)
@@ -531,12 +628,8 @@ async function loadProducts() {
 
     const rawProducts = productStore.products
 
-    console.log('Raw Products vom Store:', rawProducts)
-
     if (!rawProducts) {
       allProducts.value = []
-      console.warn('Keine Produkte im Store gefunden (rawProducts ist null/undefined)')
-      showToast('Store hat keine Produkte zurückgegeben', 'error')
       return
     }
 
@@ -544,49 +637,25 @@ async function loadProducts() {
 
     if (Array.isArray(rawProducts)) {
       extractedProducts = rawProducts
-      console.log('Produkte sind direktes Array')
     } else if (Array.isArray(rawProducts.data)) {
       extractedProducts = rawProducts.data
-      console.log('Produkte in rawProducts.data gefunden')
     } else if (rawProducts.data && Array.isArray(rawProducts.data.data)) {
       extractedProducts = rawProducts.data.data
-      console.log('Produkte in rawProducts.data.data gefunden')
     } else if (typeof rawProducts === 'object') {
       const possibleKeys = ['products', 'items', 'results', 'product']
       for (const key of possibleKeys) {
         if (Array.isArray(rawProducts[key])) {
           extractedProducts = rawProducts[key]
-          console.log(`Produkte in rawProducts.${key} gefunden`)
           break
         }
-      }
-
-      if (extractedProducts.length === 0) {
-        console.warn('Keine Produkte gefunden. Verfügbare Keys:', Object.keys(rawProducts))
       }
     }
 
     allProducts.value = extractedProducts
 
-    console.log('Extrahierte Produkte:', {
-      count: extractedProducts.length,
-      first: extractedProducts[0] || null
-    })
-
-    if (extractedProducts.length === 0) {
-      showToast('Keine Produkte in der Datenbank gefunden', 'info')
-    } else {
-      console.log(`✅ ${extractedProducts.length} Produkte erfolgreich geladen`)
-    }
-
   } catch (error) {
-    console.error('❌ Fehler beim Laden der Produkte:', error)
-    console.error('Error Details:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status
-    })
-    productsError.value = 'Fehler beim Laden der Produkte: ' + (error.message || 'Unbekannter Fehler')
+    console.error('Fehler beim Laden der Produkte:', error)
+    productsError.value = 'Fehler beim Laden der Produkte'
     showToast('Fehler beim Laden der Produkte', 'error')
   } finally {
     productsLoading.value = false
@@ -692,35 +761,83 @@ async function loadData() {
 onMounted(() => {
   loadData()
 })
-
-watch(() => productStore.products, (newVal) => {
-  if (debugMode.value) {
-    console.log('ProductStore geändert:', newVal)
-  }
-}, { deep: true })
 </script>
 
 <style scoped>
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Modal Transitions */
 .modal-enter-active,
-.modal-leave-active { transition: opacity 0.3s ease; }
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
 .modal-enter-active .bg-white,
-.modal-leave-active .bg-white { transition: transform 0.3s ease; }
+.modal-leave-active .bg-white {
+  transition: transform 0.3s ease;
+}
 .modal-enter-from,
-.modal-leave-to { opacity: 0; }
-.modal-enter-from .bg-white { transform: scale(0.95) translateY(20px); }
-.modal-leave-to .bg-white { transform: scale(0.95) translateY(20px); }
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .bg-white {
+  transform: scale(0.95) translateY(20px);
+}
+.modal-leave-to .bg-white {
+  transform: scale(0.95) translateY(20px);
+}
 
 /* Mobile Modal - slide up */
-@media (max-width: 640px) {
-  .modal-enter-from .bg-white { transform: translateY(100%); }
-  .modal-leave-to .bg-white { transform: translateY(100%); }
+@media (max-width: 768px) {
+  .modal-enter-from .bg-white {
+    transform: translateY(100%);
+  }
+  .modal-leave-to .bg-white {
+    transform: translateY(100%);
+  }
 }
 
 /* Toast Transitions */
 .toast-enter-active,
-.toast-leave-active { transition: all 0.3s ease; }
-.toast-enter-from { transform: translateX(100%); opacity: 0; }
-.toast-leave-to { transform: translateX(50px); opacity: 0; }
-.toast-move { transition: transform 0.3s ease; }
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+.toast-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.toast-leave-to {
+  transform: translateX(50px);
+  opacity: 0;
+}
+.toast-move {
+  transition: transform 0.3s ease;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #6366f1, #818cf8);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #4f46e5, #6366f1);
+}
 </style>

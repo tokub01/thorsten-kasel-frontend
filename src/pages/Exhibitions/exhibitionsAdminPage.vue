@@ -1,118 +1,179 @@
 <template>
-  <section class="bg-gray-300 min-h-screen py-6 sm:py-10 px-3 sm:px-6">
-    <div class="max-w-7xl mx-auto space-y-6 sm:space-y-8">
+  <section class="bg-gray-300 to-gray-300 p-4 md:p-8 min-h-screen">
+    <div class="max-w-7xl mx-auto">
 
       <!-- HEADER -->
-      <div class="flex flex-col gap-4">
-        <div class="flex items-center justify-between">
-          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
-            <ImageIcon class="w-7 h-7 sm:w-9 sm:h-9 text-gray-700" />
-            Ausstellungen
-          </h1>
+      <div class="mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <div class="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
+                <ImageIcon class="w-8 h-8 text-white" />
+              </div>
+              Ausstellungen
+            </h1>
+            <p class="text-gray-600">Verwalte deine Ausstellungen und Galerien</p>
+          </div>
           <button
             @click="openCreateModal"
-            class="bg-gray-900 hover:bg-gray-800 text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium text-sm sm:text-base"
+            class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all flex items-center justify-center gap-2 font-semibold shadow-lg"
           >
-            <Plus class="w-4 h-4 sm:w-5 sm:h-5" />
-            <span class="hidden sm:inline">Neue Ausstellung</span>
-            <span class="sm:hidden">Neu</span>
+            <Plus class="w-5 h-5" />
+            <span>Neue Ausstellung</span>
           </button>
         </div>
 
         <!-- FILTERS -->
-        <div class="flex flex-col sm:flex-row gap-3">
-          <div class="relative flex-1">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              v-model="keyword"
-              placeholder="Ausstellungen durchsuchen..."
-              class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:outline-none text-sm"
-            />
+        <div class="bg-white rounded-2xl shadow-md p-4 md:p-6 border border-gray-100">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="relative md:col-span-2">
+              <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                v-model="keyword"
+                placeholder="Ausstellungen durchsuchen..."
+                class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+              />
+            </div>
+            <div class="flex gap-3">
+              <select
+                v-model="sort"
+                class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
+              >
+                <option value="desc">📅 Neueste zuerst</option>
+                <option value="asc">📅 Älteste zuerst</option>
+              </select>
+              <button
+                @click="store.fetchExhibitions(keyword, sort)"
+                class="px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all flex items-center gap-2 font-semibold shadow-sm hover:shadow-md"
+              >
+                <RefreshCw class="w-5 h-5" />
+              </button>
+            </div>
           </div>
-          <div class="flex gap-3">
-            <select
-              v-model="sort"
-              class="flex-1 sm:flex-none border border-gray-300 rounded-lg px-3 sm:px-4 py-2.5 bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:outline-none text-sm"
-            >
-              <option value="desc">Neueste zuerst</option>
-              <option value="asc">Älteste zuerst</option>
-            </select>
-            <button
-              @click="store.fetchExhibitions(keyword, sort)"
-              class="px-3 sm:px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg shadow-sm hover:bg-gray-200 transition flex items-center gap-2 text-sm font-medium"
-            >
-              <RefreshCw class="w-4 h-4" />
-              <span class="hidden sm:inline">Aktualisieren</span>
-            </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="mt-6 bg-white rounded-2xl shadow-md p-4 md:p-6 border border-gray-100">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
+              <p class="text-3xl font-bold text-purple-600">{{ totalExhibitions }}</p>
+              <p class="text-sm text-gray-600 font-medium mt-1">Ausstellungen</p>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+              <p class="text-3xl font-bold text-blue-600">{{ filteredExhibitions.length }}</p>
+              <p class="text-sm text-gray-600 font-medium mt-1">Gefiltert</p>
+            </div>
+            <div class="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl col-span-2 md:col-span-1">
+              <p class="text-3xl font-bold text-pink-600">{{ exhibitionsWithImages }}</p>
+              <p class="text-sm text-gray-600 font-medium mt-1">Mit Bildern</p>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- LOADING -->
-      <div v-if="store.loading" class="flex flex-col items-center justify-center py-12 sm:py-16">
-        <Loader2 class="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 animate-spin mb-3" />
-        <p class="text-gray-600 font-medium text-sm sm:text-base">Lade Ausstellungen...</p>
+      <div v-if="store.loading" class="flex flex-col items-center justify-center py-20">
+        <div class="relative">
+          <Loader2 class="w-16 h-16 text-purple-600 animate-spin" />
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-12 h-12 bg-purple-100 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+        <p class="text-gray-600 font-semibold mt-6 text-lg">Lade Ausstellungen...</p>
       </div>
 
       <!-- ERROR -->
       <div
         v-else-if="store.error"
-        class="bg-red-50 border border-red-200 rounded-xl p-6 text-center"
+        class="bg-white rounded-2xl shadow-md border-2 border-red-200 p-8 text-center"
       >
-        <AlertCircle class="w-10 h-10 sm:w-12 sm:h-12 text-red-600 mx-auto mb-3" />
-        <p class="text-red-600 font-medium text-sm sm:text-base">Fehler beim Laden: {{ store.error.message }}</p>
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertCircle class="w-8 h-8 text-red-600" />
+        </div>
+        <p class="text-red-600 font-semibold text-lg mb-4">Fehler beim Laden: {{ store.error.message }}</p>
+        <button
+          @click="store.fetchExhibitions(keyword, sort)"
+          class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:shadow-xl transition font-semibold"
+        >
+          Erneut versuchen
+        </button>
       </div>
 
       <!-- GRID -->
       <div
         v-else-if="filteredExhibitions.length"
-        class="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        class="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       >
         <article
-          v-for="exhibition in filteredExhibitions"
+          v-for="(exhibition, index) in filteredExhibitions"
           :key="exhibition.id"
           @click="openViewModal(exhibition)"
-          class="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
+          class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 cursor-pointer group"
+          :style="`animation: fadeInUp 0.5s ease-out ${index * 0.05}s both`"
         >
-          <div class="relative h-40 sm:h-48 bg-gray-100 overflow-hidden">
+          <div class="relative h-48 md:h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
             <img
               v-if="exhibition.image"
               :src="exhibition.image"
               :alt="exhibition.title"
-              class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+              class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
               loading="lazy"
             />
             <div v-else class="flex items-center justify-center h-full text-gray-400">
-              <ImageIcon class="w-10 h-10 sm:w-12 sm:h-12" />
+              <ImageIcon class="w-12 h-12" />
             </div>
             <!-- Hover Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-              <span class="text-white text-xs font-medium flex items-center gap-1.5">
-                <Eye class="w-3.5 h-3.5" />
-                Ansehen
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+              <span class="text-white text-sm font-bold flex items-center gap-2">
+                <Eye class="w-4 h-4" />
+                Details ansehen
               </span>
             </div>
           </div>
-          <div class="p-4 sm:p-5">
-            <h2 class="text-base sm:text-lg font-semibold text-gray-900 truncate mb-2">
+          <div class="p-5">
+            <h2 class="text-lg font-bold text-gray-900 truncate mb-2 group-hover:text-purple-600 transition">
               {{ exhibition.title }}
             </h2>
-            <p class="text-gray-600 line-clamp-2 text-xs sm:text-sm mb-3 min-h-[2.5rem]">
+            <p class="text-gray-600 line-clamp-2 text-sm mb-3 min-h-[2.5rem]">
               {{ exhibition.description || "Keine Beschreibung verfügbar." }}
             </p>
-            <div class="flex items-center gap-2 text-xs text-gray-500">
-              <Calendar class="w-3.5 h-3.5" />
-              <span>{{ formatDate(exhibition.created_at) }}</span>
+            <div class="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+              <div class="flex items-center gap-2 text-xs text-gray-500">
+                <Calendar class="w-3.5 h-3.5" />
+                <span>{{ formatDate(exhibition.created_at) }}</span>
+              </div>
+              <span
+                v-if="exhibition.isActive"
+                class="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-semibold"
+              >
+                <Eye class="w-3 h-3" />
+                Aktiv
+              </span>
+              <span
+                v-else
+                class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-semibold"
+              >
+                Inaktiv
+              </span>
             </div>
           </div>
         </article>
       </div>
 
       <!-- NO RESULTS -->
-      <div v-else class="bg-white rounded-xl sm:rounded-2xl shadow-sm p-12 sm:p-16 text-center">
-        <ImageIcon class="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
-        <p class="text-gray-500 text-base sm:text-lg font-medium">Keine Ausstellungen vorhanden</p>
-        <p class="text-gray-400 text-xs sm:text-sm mt-2">Erstelle deine erste Ausstellung mit dem Button oben</p>
+      <div v-else class="bg-white rounded-2xl shadow-md p-12 md:p-20 text-center">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <ImageIcon class="w-10 h-10 text-gray-400" />
+        </div>
+        <p class="text-gray-500 text-xl font-semibold mb-2">Keine Ausstellungen vorhanden</p>
+        <p class="text-gray-400 text-sm mb-6">Erstelle deine erste Ausstellung mit dem Button oben</p>
+        <button
+          @click="openCreateModal"
+          class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all font-semibold"
+        >
+          <Plus class="w-5 h-5" />
+          Erste Ausstellung erstellen
+        </button>
       </div>
     </div>
 
@@ -121,60 +182,86 @@
       <transition name="modal">
         <div
           v-if="modal.visible && modal.type === 'view'"
-          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
-          @click.self="closeModal"
+          @click="closeModal"
+          class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
         >
-          <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+          <div @click.stop class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full md:max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
             <!-- Header -->
-            <div class="sticky top-0 flex justify-between items-start gap-3 p-4 sm:p-6 border-b bg-white z-10 rounded-t-2xl">
-              <h2 class="text-xl sm:text-2xl font-bold text-gray-900 flex-1 leading-tight">
-                {{ selectedExhibition.title }}
-              </h2>
+            <div class="sticky top-0 flex justify-between items-start gap-3 p-6 border-b bg-gradient-to-r from-gray-50 to-gray-100 z-10 rounded-t-2xl">
+              <div class="flex items-start gap-3 flex-1">
+                <div class="p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex-shrink-0">
+                  <ImageIcon class="w-6 h-6 text-purple-600" />
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 leading-tight">
+                  {{ selectedExhibition.title }}
+                </h2>
+              </div>
               <button
                 @click="closeModal"
-                class="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg flex-shrink-0"
+                class="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-white rounded-xl flex-shrink-0"
               >
-                <X class="w-5 h-5 sm:w-6 sm:h-6" />
+                <X class="w-6 h-6" />
               </button>
             </div>
 
             <!-- Content -->
-            <div class="p-4 sm:p-6 space-y-4">
+            <div class="p-6 space-y-4">
               <img
                 v-if="selectedExhibition.image"
                 :src="selectedExhibition.image"
                 :alt="selectedExhibition.title"
-                class="rounded-xl w-full max-h-64 sm:max-h-96 object-cover shadow-md"
+                class="rounded-xl w-full max-h-96 object-cover shadow-lg border-2 border-gray-200"
               />
-              <div v-if="selectedExhibition.description" class="text-gray-700 leading-relaxed text-sm sm:text-base">
-                {{ selectedExhibition.description }}
+              <div v-if="selectedExhibition.description" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200">
+                <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <FileText class="w-4 h-4 text-blue-600" />
+                  Kurzbeschreibung
+                </h3>
+                <p class="text-gray-800 leading-relaxed">{{ selectedExhibition.description }}</p>
               </div>
-              <div v-if="selectedExhibition.text" class="text-gray-600 leading-relaxed pt-3 border-t text-sm sm:text-base">
-                {{ selectedExhibition.text }}
+              <div v-if="selectedExhibition.text" class="bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
+                <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                  <AlignLeft class="w-4 h-4 text-gray-600" />
+                  Detaillierte Beschreibung
+                </h3>
+                <p class="text-gray-700 leading-relaxed whitespace-pre-wrap">{{ selectedExhibition.text }}</p>
               </div>
-              <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-500 pt-3 border-t">
-                <Calendar class="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <div class="flex items-center gap-2 text-sm text-gray-500 pt-3 border-t">
+                <Calendar class="w-4 h-4" />
                 <span>Erstellt am: {{ formatDate(selectedExhibition.created_at) }}</span>
+              </div>
+              <div class="flex items-center gap-2 pt-2">
+                <span
+                  v-if="selectedExhibition.isActive"
+                  class="inline-flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg text-sm font-semibold"
+                >
+                  <Eye class="w-4 h-4" />
+                  Öffentlich sichtbar
+                </span>
+                <span
+                  v-else
+                  class="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-semibold"
+                >
+                  Nicht öffentlich
+                </span>
               </div>
             </div>
 
             <!-- Footer -->
-            <div class="sticky bottom-0 p-4 sm:p-6 border-t bg-gray-50 rounded-b-2xl flex gap-3">
+            <div class="sticky bottom-0 p-6 border-t bg-gray-50 rounded-b-2xl flex flex-col sm:flex-row gap-3">
               <button
                 @click="openEditModal(selectedExhibition)"
-                class="flex-1 bg-gray-900 hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+                class="flex-1 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-4 py-3 rounded-xl hover:shadow-xl transition-all font-semibold flex items-center justify-center gap-2"
               >
-                <Edit2 class="w-4 h-4" />
-                <span class="hidden sm:inline">Bearbeiten</span>
-                <span class="sm:hidden">Edit</span>
+                <Edit2 class="w-5 h-5" />
+                Bearbeiten
               </button>
               <button
                 @click="confirmDelete(selectedExhibition.id)"
-                class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-xl hover:shadow-xl transition-all font-semibold flex items-center justify-center gap-2"
               >
-                <Trash2 class="w-4 h-4" />
-                <span class="hidden sm:inline">Löschen</span>
-                <span class="sm:hidden">Del</span>
+                <Trash2 class="w-5 h-5" />
+                Löschen
               </button>
             </div>
           </div>
@@ -187,122 +274,137 @@
       <transition name="modal">
         <div
           v-if="modal.visible && modal.type === 'edit'"
-          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
-          @click.self="closeModal"
+          @click="closeModal"
+          class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
         >
-          <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+          <div @click.stop class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full md:max-w-2xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
             <!-- Header -->
-            <div class="sticky top-0 flex justify-between items-center p-4 sm:p-6 border-b bg-white z-10 rounded-t-2xl">
-              <h2 class="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <component :is="editMode ? Edit2 : Plus" class="w-5 h-5 sm:w-6 sm:h-6" />
-                <span class="hidden sm:inline">{{ editMode ? 'Ausstellung bearbeiten' : 'Neue Ausstellung' }}</span>
-                <span class="sm:hidden">{{ editMode ? 'Bearbeiten' : 'Neu' }}</span>
+            <div class="sticky top-0 flex justify-between items-center p-6 border-b bg-gradient-to-r from-gray-50 to-gray-100 z-10 rounded-t-2xl">
+              <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl">
+                  <component :is="editMode ? Edit2 : Plus" class="w-5 h-5 text-purple-600" />
+                </div>
+                {{ editMode ? 'Ausstellung bearbeiten' : 'Neue Ausstellung' }}
               </h2>
               <button
                 @click="closeModal"
-                class="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg"
+                class="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-white rounded-xl"
               >
-                <X class="w-5 h-5 sm:w-6 sm:h-6" />
+                <X class="w-6 h-6" />
               </button>
             </div>
 
             <!-- Bildvorschau -->
-            <div v-if="imagePreview" class="p-4 sm:p-6 pb-0">
+            <div v-if="imagePreview" class="p-6 pb-0">
               <div class="relative group">
                 <img
                   :src="imagePreview"
-                  class="w-full h-48 sm:h-56 object-cover rounded-xl shadow-md"
+                  class="w-full h-56 md:h-64 object-cover rounded-xl shadow-lg border-2 border-gray-200"
                   alt="Vorschau"
                 />
                 <button
                   v-if="imageFile"
                   @click="removeImage"
                   type="button"
-                  class="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  class="absolute top-3 right-3 bg-red-600 text-white p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700"
                 >
-                  <X class="w-4 h-4" />
+                  <X class="w-5 h-5" />
                 </button>
               </div>
             </div>
 
             <!-- Form -->
-            <form @submit.prevent="saveExhibition" class="p-4 sm:p-6 space-y-4 sm:space-y-5">
+            <div class="p-6 space-y-5">
               <div class="space-y-2">
-                <label class="text-gray-700 font-semibold flex items-center gap-2 text-sm">
-                  <FileText class="w-4 h-4" />
-                  Titel *
+                <label class="text-gray-700 font-bold flex items-center gap-2">
+                  <FileText class="w-4 h-4 text-purple-600" />
+                  Titel <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="form.title"
-                  placeholder="Ausstellungstitel"
+                  placeholder="z.B. Moderne Kunst 2024"
                   required
-                  class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 focus:ring-2 focus:ring-gray-900 focus:outline-none transition text-sm sm:text-base"
+                  class="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
                 />
               </div>
 
               <div class="space-y-2">
-                <label class="text-gray-700 font-semibold flex items-center gap-2 text-sm">
-                  <AlignLeft class="w-4 h-4" />
+                <label class="text-gray-700 font-bold flex items-center gap-2">
+                  <AlignLeft class="w-4 h-4 text-purple-600" />
                   Kurzbeschreibung
                 </label>
                 <textarea
                   v-model="form.description"
-                  placeholder="Kurze Zusammenfassung der Ausstellung"
+                  placeholder="Kurze Zusammenfassung der Ausstellung..."
                   rows="3"
-                  class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 focus:ring-2 focus:ring-gray-900 focus:outline-none transition resize-none text-sm sm:text-base"
+                  class="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition resize-none"
                 ></textarea>
               </div>
 
               <div class="space-y-2">
-                <label class="text-gray-700 font-semibold flex items-center gap-2 text-sm">
-                  <ImageIcon class="w-4 h-4" />
-                  Bild auswählen
+                <label class="text-gray-700 font-bold flex items-center gap-2">
+                  <ImageIcon class="w-4 h-4 text-purple-600" />
+                  Bild hochladen
                 </label>
-                <div class="relative">
-                  <input
-                    type="file"
-                    ref="fileInput"
-                    @change="handleImage"
-                    accept="image/*"
-                    class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-gray-900 file:text-white hover:file:bg-gray-800 file:cursor-pointer cursor-pointer file:text-sm file:font-medium"
-                  />
-                </div>
-                <p class="text-xs text-gray-500">Empfohlen: 1200x800px, max. 5MB</p>
+                <input
+                  type="file"
+                  ref="fileInput"
+                  @change="handleImage"
+                  accept="image/*"
+                  class="w-full border-2 border-gray-200 rounded-xl p-3 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-purple-500 file:to-purple-600 file:text-white hover:file:shadow-lg file:cursor-pointer cursor-pointer file:font-semibold transition"
+                />
+                <p class="text-xs text-gray-500 flex items-center gap-1.5">
+                  <Info class="w-3.5 h-3.5" />
+                  Empfohlen: 1200x800px, max. 5MB
+                </p>
               </div>
 
               <div class="space-y-2">
-                <label class="text-gray-700 font-semibold flex items-center gap-2 text-sm">
-                  <FileText class="w-4 h-4" />
+                <label class="text-gray-700 font-bold flex items-center gap-2">
+                  <FileText class="w-4 h-4 text-purple-600" />
                   Detaillierte Beschreibung
                 </label>
                 <textarea
                   v-model="form.text"
-                  placeholder="Ausführliche Beschreibung der Ausstellung"
-                  rows="5"
-                  class="w-full border border-gray-300 rounded-lg p-2.5 sm:p-3 focus:ring-2 focus:ring-gray-900 focus:outline-none transition resize-none text-sm sm:text-base"
+                  placeholder="Ausführliche Beschreibung der Ausstellung..."
+                  rows="6"
+                  class="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition resize-none"
                 ></textarea>
               </div>
 
+              <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border-2 border-purple-200">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  v-model="form.isActive"
+                  class="w-5 h-5 text-purple-600 border-2 border-gray-300 rounded focus:ring-2 focus:ring-purple-500 cursor-pointer"
+                />
+                <label for="isActive" class="text-gray-700 font-bold cursor-pointer flex-1 flex items-center gap-2">
+                  <Eye class="w-4 h-4 text-purple-600" />
+                  Ausstellung aktiv (öffentlich sichtbar)
+                </label>
+              </div>
+
               <!-- Footer Buttons -->
-              <div class="flex gap-3 pt-4 border-t">
+              <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t">
                 <button
                   type="button"
                   @click="closeModal"
-                  class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-medium text-sm sm:text-base"
+                  class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-semibold"
                 >
                   Abbrechen
                 </button>
                 <button
-                  type="submit"
-                  :disabled="isSubmitting"
-                  class="flex-1 px-4 py-2.5 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  @click="saveExhibition"
+                  :disabled="isSubmitting || !form.title.trim()"
+                  class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-xl transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-                  <Save v-else class="w-4 h-4" />
+                  <Loader2 v-if="isSubmitting" class="w-5 h-5 animate-spin" />
+                  <Save v-else class="w-5 h-5" />
                   {{ editMode ? 'Speichern' : 'Erstellen' }}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </transition>
@@ -313,32 +415,32 @@
       <transition name="modal">
         <div
           v-if="showDeleteModal"
-          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          @click.self="showDeleteModal = false"
+          @click="showDeleteModal = false"
+          class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         >
-          <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6">
+          <div @click.stop class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8">
             <div class="text-center">
-              <div class="mx-auto flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-red-100 mb-4">
-                <AlertTriangle class="h-7 w-7 sm:h-8 sm:w-8 text-red-600" />
+              <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-red-100 to-red-200 mb-4">
+                <AlertTriangle class="h-8 w-8 text-red-600" />
               </div>
-              <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Ausstellung löschen?</h3>
-              <p class="text-gray-600 mb-6 text-sm sm:text-base">
+              <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-3">Ausstellung löschen?</h3>
+              <p class="text-gray-600 mb-6">
                 Möchtest du diese Ausstellung wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
               </p>
-              <div class="flex gap-3">
+              <div class="flex flex-col sm:flex-row gap-3">
                 <button
                   @click="showDeleteModal = false"
-                  class="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-medium text-sm sm:text-base"
+                  class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-semibold"
                 >
                   Abbrechen
                 </button>
                 <button
                   @click="deleteExhibition"
                   :disabled="isDeleting"
-                  class="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-xl transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Loader2 v-if="isDeleting" class="w-4 h-4 animate-spin" />
-                  <Trash2 v-else class="w-4 h-4" />
+                  <Loader2 v-if="isDeleting" class="w-5 h-5 animate-spin" />
+                  <Trash2 v-else class="w-5 h-5" />
                   Löschen
                 </button>
               </div>
@@ -350,24 +452,24 @@
 
     <!-- TOASTS -->
     <teleport to="body">
-      <div class="fixed top-4 left-4 right-4 sm:top-20 sm:right-6 sm:left-auto space-y-2 z-50 sm:max-w-sm">
+      <div class="fixed top-4 right-4 md:top-6 md:right-6 space-y-2 z-[60] max-w-sm">
         <transition-group name="toast">
           <div
             v-for="toast in toasts"
             :key="toast.id"
             :class="[
-              'flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg shadow-lg text-white font-medium text-sm',
-              toast.type === 'success' ? 'bg-green-600' :
-              toast.type === 'error' ? 'bg-red-600' : 'bg-gray-900'
+              'flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-white font-semibold backdrop-blur-sm',
+              toast.type === 'success' ? 'bg-green-600/95' :
+              toast.type === 'error' ? 'bg-red-600/95' : 'bg-gray-800/95'
             ]"
           >
             <component
               :is="toast.type === 'success' ? CheckCircle2 : toast.type === 'error' ? XCircle : Info"
-              class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
+              class="w-5 h-5 flex-shrink-0"
             />
             <span class="flex-1">{{ toast.message }}</span>
-            <button @click="removeToast(toast.id)" class="hover:bg-white/20 rounded p-1 transition">
-              <X class="w-3 h-3 sm:w-4 sm:h-4" />
+            <button @click="removeToast(toast.id)" class="hover:bg-white/20 rounded-lg p-1.5 transition">
+              <X class="w-4 h-4" />
             </button>
           </div>
         </transition-group>
@@ -401,7 +503,7 @@ const exhibitionToDelete = ref(null);
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
 
-const form = ref({ id: "", title: "", description: "", image: "", text: "" });
+const form = ref({ id: "", title: "", description: "", image: "", text: "", isActive: true });
 const imageFile = ref(null);
 const imagePreview = ref(null);
 const fileInput = ref(null);
@@ -416,7 +518,7 @@ const showToast = (message, type = 'success') => {
 }
 const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id)
 
-onMounted(() => store.fetchExhibitions());
+onMounted(() => store.fetchExhibitions(keyword.value, sort.value));
 
 const filteredExhibitions = computed(() => {
   const list = Array.isArray(store.exhibitions) ? store.exhibitions : [];
@@ -425,6 +527,14 @@ const filteredExhibitions = computed(() => {
     [e.title, e.description].some((f) => f?.toLowerCase().includes(key))
   );
 });
+
+const totalExhibitions = computed(() =>
+  Array.isArray(store.exhibitions) ? store.exhibitions.length : 0
+)
+
+const exhibitionsWithImages = computed(() =>
+  Array.isArray(store.exhibitions) ? store.exhibitions.filter(e => e.image).length : 0
+)
 
 function formatDate(date) {
   if (!date) return "";
@@ -443,7 +553,7 @@ function openViewModal(exhibition) {
 
 function openCreateModal() {
   editMode.value = false;
-  form.value = { id: "", title: "", description: "", image: "", text: "" };
+  form.value = { id: "", title: "", description: "", image: "", text: "", isActive: true };
   imageFile.value = null;
   imagePreview.value = null;
   modal.value = { visible: true, type: "edit" };
@@ -461,7 +571,7 @@ function openEditModal(exhibition) {
 function closeModal() {
   modal.value.visible = false;
   setTimeout(() => {
-    form.value = { title: "", description: "", image: "", text: "" };
+    form.value = { title: "", description: "", image: "", text: "", isActive: true };
     imageFile.value = null;
     imagePreview.value = null;
     isSubmitting.value = false;
@@ -491,6 +601,9 @@ function handleImage(event) {
 
 function removeImage() {
   imageFile.value = null;
+  if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(imagePreview.value);
+  }
   imagePreview.value = null;
   if (fileInput.value) {
     fileInput.value.value = '';
@@ -503,31 +616,48 @@ async function saveExhibition() {
 
   isSubmitting.value = true;
   try {
-    const fd = new FormData();
-    fd.append("title", form.value.title);
-    fd.append("description", form.value.description || "");
-    fd.append("text", form.value.text || "");
-    if (imageFile.value) fd.append("image", imageFile.value);
-
     if (editMode.value) {
+      // Bei Update: alle Parameter übergeben
       await store.updateExhibition(
         form.value.id,
-        form.value.title,
-        form.value.description,
-        imageFile.value,
-        form.value.text
+        form.value.title.trim(),
+        form.value.description?.trim() || "",
+        imageFile.value, // Bild-Datei oder null
+        form.value.text?.trim() || "",
+        form.value.isActive
       );
       showToast("Ausstellung erfolgreich aktualisiert!", "success");
     } else {
+      // Bei Create: FormData erstellen
+      const fd = new FormData();
+      fd.append("title", form.value.title.trim());
+      fd.append("description", form.value.description?.trim() || "");
+      fd.append("text", form.value.text?.trim() || "");
+      fd.append("isActive", form.value.isActive ? "1" : "0");
+
+      if (imageFile.value) {
+        fd.append("image", imageFile.value);
+      }
+
       await store.createExhibition(fd);
       showToast("Ausstellung erfolgreich erstellt!", "success");
     }
 
     closeModal();
-    await store.fetchExhibitions();
+    await store.fetchExhibitions(keyword.value, sort.value);
   } catch (error) {
     console.error("Fehler beim Speichern:", error);
-    showToast("Fehler beim Speichern", "error");
+
+    // Detaillierte Fehlerausgabe für Debugging
+    if (error.response?.data?.errors) {
+      const errors = Object.values(error.response.data.errors).flat();
+      showToast(errors[0] || "Validierungsfehler", "error");
+      console.error("Validierungsfehler:", error.response.data.errors);
+    } else if (error.response?.data?.message) {
+      showToast(error.response.data.message, "error");
+    } else {
+      showToast("Fehler beim Speichern", "error");
+    }
   } finally {
     isSubmitting.value = false;
   }
@@ -542,7 +672,7 @@ async function deleteExhibition() {
     showToast("Ausstellung erfolgreich gelöscht!", "success");
     showDeleteModal.value = false;
     exhibitionToDelete.value = null;
-    await store.fetchExhibitions();
+    await store.fetchExhibitions(keyword.value, sort.value);
   } catch (error) {
     console.error("Fehler beim Löschen:", error);
     showToast("Fehler beim Löschen", "error");
@@ -553,6 +683,17 @@ async function deleteExhibition() {
 </script>
 
 <style scoped>
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -581,7 +722,7 @@ async function deleteExhibition() {
 }
 
 /* Mobile Modal - slide up */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .modal-enter-from > div {
     transform: translateY(100%);
   }
