@@ -63,11 +63,11 @@ export async function update(exhibition_id, exhibition_title, exhibition_descrip
     }
 }
 
-export async function destroy(news_id) {
+export async function destroy(exhibition_id) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/news/${news_id}`, {
+        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/exhibitions/${exhibition_id}`, {
             _method: "DELETE",
         });
 
