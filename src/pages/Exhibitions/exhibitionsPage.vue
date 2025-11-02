@@ -1,6 +1,6 @@
 <template>
-  <div class="bg-gray-300 min-h-screen">
-    <section class="mx-auto px-6 py-16 max-w-7xl">
+  <div class="bg-gray-300">
+    <section class="mx-auto px-6 py-16 max-w-7xl mt-3">
       <h1 class="text-4xl font-serif font-bold text-gray-800 mb-6">Ausstellungen</h1>
       <p class="text-gray-600 mb-12">Eine Übersicht über die bisherigen und kommenden Ausstellungen von Thorsten Kasel.</p>
 

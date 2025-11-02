@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-300 px-4 py-10">
+  <div class="bg-gray-300 px-4 py-10 mt-3">
     <div class="mx-auto bg-white shadow-lg rounded-xl p-8 max-w-4xl">
       <h1 class="text-4xl font-bold text-gray-800 mb-6 text-center">Vita</h1>
 

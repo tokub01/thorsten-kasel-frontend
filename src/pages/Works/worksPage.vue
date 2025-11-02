@@ -1,7 +1,7 @@
 <template>
-  <div class="bg-gray-300 p-6">
+  <div class="bg-gray-300 p-6 mt-3">
     <!-- Titel / Intro -->
-    <section class="text-center mb-12">
+    <section class="text-center mb-12 mt-3">
       <h1 class="text-4xl sm:text-5xl font-serif font-bold text-gray-800 mb-4">
         Werke
       </h1>

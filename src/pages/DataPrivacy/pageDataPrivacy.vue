@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-50 min-h-screen px-6 py-12 text-gray-800 max-w-4xl mx-auto">
+  <div class="bg-gray-300 px-6 m-3 text-gray-800 max-w-4xl mx-auto mt-3">
     <h1 class="text-3xl font-bold mb-10 text-center">Datenschutzerklärung</h1>
 
     <!-- 1. Datenschutz auf einen Blick -->

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br  flex items-center justify-center px-4 py-12">
+  <div class=" bg-gray-300 flex items-center justify-center px-4 py-12  mt-3">
     <div class="max-w-2xl w-full">
 
       <!-- Header -->

@@ -9,7 +9,7 @@
       </h1>
       <div class="flex items-center gap-3">
         <span class="text-sm text-gray-600">
-          {{ requests.length }} unbearbeitet{{ requests.length === 1 ? 'e' : '' }} Anfrage{{ requests.length === 1 ? '' : 'n' }}
+          {{ unreadCount }} unbearbeitet{{ unreadCount === 1 ? 'e' : '' }} Anfrage{{ unreadCount === 1 ? '' : 'n' }}
         </span>
       </div>
     </div>
@@ -24,13 +24,19 @@
     <div v-else-if="store.errorMessage" class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
       <AlertCircle class="w-12 h-12 text-red-600 mx-auto mb-3" />
       <p class="text-red-600 font-medium">{{ store.errorMessage }}</p>
+      <button
+        @click="loadRequests"
+        class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+      >
+        Erneut versuchen
+      </button>
     </div>
 
     <!-- Kartenansicht der Anfragen -->
-    <div v-else-if="requests.length" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else-if="unreadRequests.length" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div
-        v-for="(req, index) in requests"
-        :key="index"
+        v-for="(req, index) in unreadRequests"
+        :key="req.id || index"
         class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group hover:-translate-y-1"
         @click="openModal(req, index)"
       >
@@ -47,7 +53,7 @@
                 </h2>
                 <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">
                   <Mail class="w-3 h-3" />
-                  <span>{{ req.email }}</span>
+                  <span class="truncate max-w-[200px]">{{ req.email }}</span>
                 </div>
               </div>
             </div>
@@ -79,13 +85,17 @@
     <!-- Keine Anfragen -->
     <div v-else class="bg-white rounded-2xl shadow-sm p-16 text-center">
       <CheckCircle2 class="w-16 h-16 text-green-500 mx-auto mb-4" />
-      <p class="text-gray-500 text-lg font-medium">Keine Kontaktanfragen vorhanden</p>
+      <p class="text-gray-500 text-lg font-medium">Keine unbearbeiteten Kontaktanfragen</p>
       <p class="text-gray-400 text-sm mt-2">Alle Anfragen wurden bearbeitet! 🎉</p>
     </div>
 
     <!-- Modal für Detailansicht -->
     <transition name="fade">
-      <div v-if="modalOpen" class="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4" @click.self="closeModal">
+      <div
+        v-if="modalOpen"
+        class="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4"
+        @click.self="closeModal"
+      >
         <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
 
           <!-- Header -->
@@ -98,13 +108,19 @@
                 <h2 class="text-2xl font-bold text-gray-800">{{ selectedRequest?.name }}</h2>
                 <div class="flex items-center gap-2 text-sm text-gray-500 mt-1">
                   <Mail class="w-4 h-4" />
-                  <a :href="`mailto:${selectedRequest?.email}`" class="hover:text-gray-700 transition">
+                  <a
+                    :href="`mailto:${selectedRequest?.email}`"
+                    class="hover:text-gray-700 transition hover:underline"
+                  >
                     {{ selectedRequest?.email }}
                   </a>
                 </div>
               </div>
             </div>
-            <button @click="closeModal" class="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg">
+            <button
+              @click="closeModal"
+              class="text-gray-400 hover:text-gray-600 transition p-2 hover:bg-gray-100 rounded-lg"
+            >
               <X class="w-6 h-6" />
             </button>
           </div>
@@ -139,17 +155,19 @@
           <!-- Footer Actions -->
           <div class="p-6 border-t bg-gray-50 rounded-b-2xl flex flex-col sm:flex-row gap-3">
             <a
-              :href="`mailto:${selectedRequest?.email}?subject=Re: ${selectedRequest?.title || 'Ihre Anfrage'}`"
+              :href="`mailto:${selectedRequest?.email}?subject=Re: ${encodeURIComponent(selectedRequest?.title || 'Ihre Anfrage')}`"
               class="flex-1 px-4 py-2.5 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2"
             >
               <Mail class="w-4 h-4" />
               E-Mail antworten
             </a>
             <button
-              @click="markDone(selectedIndex)"
-              class="flex-1 px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2"
+              @click="markDone"
+              :disabled="isProcessing"
+              class="flex-1 px-4 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <CheckCircle2 class="w-4 h-4" />
+              <Loader2 v-if="isProcessing" class="w-4 h-4 animate-spin" />
+              <CheckCircle2 v-else class="w-4 h-4" />
               Als erledigt markieren
             </button>
           </div>
@@ -159,7 +177,11 @@
 
     <!-- Delete Confirmation Modal -->
     <transition name="fade">
-      <div v-if="showDeleteModal" class="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4" @click.self="showDeleteModal = false">
+      <div
+        v-if="showDeleteModal"
+        class="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4"
+        @click.self="showDeleteModal = false"
+      >
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
           <div class="text-center">
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
@@ -172,15 +194,18 @@
             <div class="flex gap-3">
               <button
                 @click="showDeleteModal = false"
-                class="flex-1 px-4 py-2.5 rounded-lg border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-all font-medium"
+                :disabled="isProcessing"
+                class="flex-1 px-4 py-2.5 rounded-lg border-2 border-gray-300 text-gray-600 hover:bg-gray-50 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Abbrechen
               </button>
               <button
                 @click="deleteRequest"
-                class="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2"
+                :disabled="isProcessing"
+                class="flex-1 px-4 py-2.5 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all shadow-md hover:shadow-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Trash2 class="w-4 h-4" />
+                <Loader2 v-if="isProcessing" class="w-4 h-4 animate-spin" />
+                <Trash2 v-else class="w-4 h-4" />
                 Löschen
               </button>
             </div>
@@ -201,9 +226,15 @@
             toast.type === 'error' ? 'bg-red-600' : 'bg-gray-800'
           ]"
         >
-          <component :is="toast.type === 'success' ? CheckCircle2 : toast.type === 'error' ? XCircle : Info" class="w-5 h-5 flex-shrink-0" />
+          <component
+            :is="toast.type === 'success' ? CheckCircle2 : toast.type === 'error' ? XCircle : Info"
+            class="w-5 h-5 flex-shrink-0"
+          />
           <span class="flex-1">{{ toast.message }}</span>
-          <button @click="removeToast(toast.id)" class="hover:bg-white/20 rounded p-1 transition">
+          <button
+            @click="removeToast(toast.id)"
+            class="hover:bg-white/20 rounded p-1 transition"
+          >
             <X class="w-4 h-4" />
           </button>
         </div>
@@ -221,27 +252,42 @@ import {
   XCircle, Info
 } from 'lucide-vue-next'
 
+// Store initialisieren
 const store = useContactStore()
 
-// Computed property für die Anfragen
-let requests = computed(() => store.contactRequests?.data || [])
-requests = requests.value.filter((item) => {return item.isRead === false})
+// Computed Properties für die Anfragen
+const unreadRequests = computed(() => {
+  // contactRequests ist direkt ein Array laut Store
+  const data = Array.isArray(store.contactRequests) ? store.contactRequests : []
 
-// Modal
+  // Nur ungelesene Anfragen zurückgeben (isRead kann false, 0 oder "0" sein)
+  return data.filter(item => item.isRead === false || item.isRead === 0 || item.isRead === "0")
+})
+
+const unreadCount = computed(() => unreadRequests.value.length)
+
+// Modal State
 const modalOpen = ref(false)
 const showDeleteModal = ref(false)
 const selectedRequest = ref(null)
 const selectedIndex = ref(null)
+const isProcessing = ref(false)
 
-// Toasts
+// Toast Management
 let toastId = 0
 const toasts = ref([])
+
 const showToast = (message, type = 'success') => {
   const id = ++toastId
   toasts.value.push({ id, message, type })
-  setTimeout(() => toasts.value = toasts.value.filter(t => t.id !== id), 4000)
+  setTimeout(() => {
+    toasts.value = toasts.value.filter(t => t.id !== id)
+  }, 4000)
 }
-const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id)
+
+const removeToast = (id) => {
+  toasts.value = toasts.value.filter(t => t.id !== id)
+}
 
 // Modal Funktionen
 const openModal = (request, index) => {
@@ -251,67 +297,90 @@ const openModal = (request, index) => {
 }
 
 const closeModal = () => {
+  if (isProcessing.value) return // Verhindere Schließen während Verarbeitung
   modalOpen.value = false
   selectedRequest.value = null
   selectedIndex.value = null
 }
 
-// "Als erledigt markieren"
-const markDone = async (index) => {
+// Anfrage als erledigt markieren
+const markDone = async () => {
+  if (isProcessing.value) return
+
   try {
-    if (requests.value && requests.value[index]) {
-      //const request = requests.value[index]
+    isProcessing.value = true
 
-      // Hier könntest du eine API-Anfrage machen, um den Status zu aktualisieren
-      // await store.markRequestAsDone(request.id)
+    if (selectedRequest.value?.id) {
+      // Store-Methode aufrufen
+      await store.updateContactRequest(selectedRequest.value.id)
 
-      // Lokales Entfernen aus der Liste
-      store.updateContactRequest(store.contactRequests.data[index]["id"])
-
-      store.contactRequests.data.splice(index, 1)
-      closeModal()
       showToast('Kontaktanfrage als erledigt markiert!', 'success')
+      closeModal()
+    } else {
+      throw new Error('Keine gültige Anfrage ID gefunden')
     }
   } catch (error) {
     console.error('Fehler beim Markieren als erledigt:', error)
-    showToast('Fehler beim Markieren der Anfrage', 'error')
+    showToast(error.message || 'Fehler beim Markieren der Anfrage', 'error')
+  } finally {
+    isProcessing.value = false
   }
 }
 
-// Löschen
+// Anfrage löschen
 const deleteRequest = async () => {
+  if (isProcessing.value) return
+
   try {
-    if (requests.value && requests.value[selectedIndex.value]) {
-      //const request = requests.value[selectedIndex.value]
+    isProcessing.value = true
 
-      // Hier könntest du eine API-Anfrage machen, um die Anfrage zu löschen
-      // await store.deleteRequest(request.id)
+    if (selectedRequest.value?.id) {
+      // Store-Methode aufrufen (falls vorhanden)
+      if (typeof store.deleteContactRequest === 'function') {
+        await store.deleteContactRequest(selectedRequest.value.id)
+      } else {
+        // Fallback: Lokales Entfernen aus dem Array
+        console.warn('deleteContactRequest Methode nicht im Store gefunden')
+        const index = store.contactRequests.findIndex(
+          r => r.id === selectedRequest.value.id
+        )
+        if (index !== -1) {
+          store.contactRequests.splice(index, 1)
+        }
+      }
 
-      // Lokales Entfernen aus der Liste
-      store.errors.splice(selectedIndex.value, 1)
+      showToast('Kontaktanfrage gelöscht!', 'success')
       showDeleteModal.value = false
       closeModal()
-      showToast('Kontaktanfrage gelöscht!', 'success')
+    } else {
+      throw new Error('Keine gültige Anfrage ID gefunden')
     }
   } catch (error) {
     console.error('Fehler beim Löschen:', error)
-    showToast('Fehler beim Löschen der Anfrage', 'error')
+    showToast(error.message || 'Fehler beim Löschen der Anfrage', 'error')
+  } finally {
+    isProcessing.value = false
   }
 }
 
-// Lade die Anfragen beim Mounten
-onMounted(async () => {
+// Anfragen laden
+const loadRequests = async () => {
   try {
     await store.getContactRequests()
-
-    // Fallback: Falls errors nicht initialisiert ist
-    if (!store.errors) {
-      store.errors = []
-    }
+    console.log('📊 Geladene Daten:', {
+      raw: store.contactRequests,
+      unread: unreadRequests.value,
+      count: unreadCount.value
+    })
   } catch (error) {
-    console.error('Fehler beim Laden der Kontaktanfragen:', error)
+    console.error('❌ Fehler beim Laden der Kontaktanfragen:', error)
     showToast('Fehler beim Laden der Anfragen', 'error')
   }
+}
+
+// Initialisierung beim Mounten
+onMounted(() => {
+  loadRequests()
 })
 </script>
 
@@ -327,6 +396,7 @@ onMounted(async () => {
 .fade-leave-active {
   transition: opacity 0.25s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -336,10 +406,12 @@ onMounted(async () => {
 .slide-left-leave-active {
   transition: all 0.3s ease;
 }
+
 .slide-left-enter-from {
   transform: translateX(100%);
   opacity: 0;
 }
+
 .slide-left-leave-to {
   opacity: 0;
   transform: translateX(50px);

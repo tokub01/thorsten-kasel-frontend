@@ -38,7 +38,7 @@ export async function getContactRequests(){
 
         const response = await API.get(`${process.env.VUE_APP_API_URL}/api/contact-requests`);
 
-        return response.data;
+        return response.data.data;
     } catch (error) {
         console.error("Verifizierung der E-Mail fehlgeschlagen!", error);
         throw error;

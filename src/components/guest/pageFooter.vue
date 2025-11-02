@@ -30,7 +30,7 @@
         <h2 class="font-semibold text-gray-800">Folge mir</h2>
         <div class="flex gap-4 mt-1">
           <a
-            href="#"
+            href="https://www.instagram.com/thorstenkasel"
             target="_blank"
             rel="noopener noreferrer"
             class="text-gray-600 hover:text-gray-900 transition"
@@ -38,20 +38,12 @@
             Instagram
           </a>
           <a
-            href="#"
+            href="https://www.facebook.com/thorsten.kasel.9"
             target="_blank"
             rel="noopener noreferrer"
             class="text-gray-600 hover:text-gray-900 transition"
           >
             Facebook
-          </a>
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="text-gray-600 hover:text-gray-900 transition"
-          >
-            LinkedIn
           </a>
         </div>
       </div>

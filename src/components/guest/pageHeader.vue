@@ -4,7 +4,7 @@
       <!-- Künstlername -->
       <div
         @click="router.push('/')"
-        class="text-4xl sm:text-5xl font-serif font-bold cursor-pointer text-gray-900 hover:text-gray-700 transition"
+        class="text-4xl sm:text-5xl font-bold cursor-pointer text-gray-900 hover:text-gray-700 transition"
       >
         Thorsten Kasel
       </div>

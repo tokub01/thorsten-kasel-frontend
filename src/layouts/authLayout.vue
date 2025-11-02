@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="bg-gray-300 flex flex-col min-h-screen">
     <PageHeader/>
 
     <main class="flex-grow md:ml-60">
