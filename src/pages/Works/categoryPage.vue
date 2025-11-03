@@ -7,7 +7,7 @@
           Gesichter, Farbe, Identität – Kunst zwischen Realität und Traum
         </h1>
         <img
-          src="/thorsten-kasel_uni.png"
+          src="/thorsten-kasel_uni.jpg"
           width="800"
           height="auto"
           alt="Kunstwerk Beispielbild"
