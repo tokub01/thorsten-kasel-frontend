@@ -8,10 +8,8 @@
         </h1>
         <img
           src="/thorsten-kasel_uni.jpg"
-          width="800"
-          height="auto"
           alt="Kunstwerk Beispielbild"
-          class="mx-auto rounded-2xl shadow-2xl border border-gray-200 hover:shadow-3xl transition-all duration-500 hover:scale-105 max-w-4xl w-full"
+          class="mx-auto rounded-2xl shadow-2xl border border-gray-200 hover:shadow-3xl transition-all duration-500 hover:scale-105 max-w-4xl w-full h-auto"
         />
       </div>
     </div>
