@@ -7,7 +7,9 @@
           Gesichter, Farbe, Identität – Kunst zwischen Realität und Traum
         </h1>
         <img
-          src="https://placeholdit.com/800x400/dddddd/999999"
+          src="/thorsten-kasel_uni.png"
+          width="800"
+          height="auto"
           alt="Kunstwerk Beispielbild"
           class="mx-auto rounded-2xl shadow-2xl border border-gray-200 hover:shadow-3xl transition-all duration-500 hover:scale-105 max-w-4xl w-full"
         />
