@@ -10,7 +10,7 @@
           <img
             src="/thorsten-kasel_uni.jpg"
             alt="Thorsten Kasel bei der Arbeit an einem großformatigen Gemälde"
-            class="mx-auto rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] w-full h-auto"
+            class="mx-auto rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 hover:shadow-3xl transition-all duration-500 hover:scale-[1.02] w-full h-[400px] object-cover"
           />
         </div>
       </div>
