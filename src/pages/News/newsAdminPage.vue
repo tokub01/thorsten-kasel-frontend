@@ -532,7 +532,7 @@ const updateNews = async () => {
   if(imageSelection.value) formData.append('image', imageSelection.value)
 
   try {
-    await newsStore.updateNews(newsId.value, title.value, description.value, imageSelection.value, text.value)
+    await newsStore.updateNews(newsId.value, title.value, description.value, imageSelection.value, text.value, isActive.value)
     closeModal()
     showToast('News erfolgreich aktualisiert!', 'success')
     loadNews()

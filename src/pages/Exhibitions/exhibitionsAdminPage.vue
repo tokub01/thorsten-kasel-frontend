@@ -122,7 +122,6 @@
             <div v-else class="flex items-center justify-center h-full text-gray-400">
               <ImageIcon class="w-12 h-12" />
             </div>
-            <!-- Hover Overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
               <span class="text-white text-sm font-bold flex items-center gap-2">
                 <Eye class="w-4 h-4" />
@@ -186,7 +185,6 @@
           class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
         >
           <div @click.stop class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full md:max-w-3xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
-            <!-- Header -->
             <div class="sticky top-0 flex justify-between items-start gap-3 p-6 border-b bg-gradient-to-r from-gray-50 to-gray-100 z-10 rounded-t-2xl">
               <div class="flex items-start gap-3 flex-1">
                 <div class="p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl flex-shrink-0">
@@ -204,7 +202,6 @@
               </button>
             </div>
 
-            <!-- Content -->
             <div class="p-6 space-y-4">
               <img
                 v-if="selectedExhibition.image"
@@ -247,7 +244,6 @@
               </div>
             </div>
 
-            <!-- Footer -->
             <div class="sticky bottom-0 p-6 border-t bg-gray-50 rounded-b-2xl flex flex-col sm:flex-row gap-3">
               <button
                 @click="openEditModal(selectedExhibition)"
@@ -278,7 +274,6 @@
           class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center z-50 p-0 md:p-4"
         >
           <div @click.stop class="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full md:max-w-2xl max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
-            <!-- Header -->
             <div class="sticky top-0 flex justify-between items-center p-6 border-b bg-gradient-to-r from-gray-50 to-gray-100 z-10 rounded-t-2xl">
               <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
                 <div class="p-2 bg-gradient-to-br from-purple-100 to-purple-200 rounded-xl">
@@ -556,15 +551,31 @@ function openCreateModal() {
   form.value = { id: "", title: "", description: "", image: "", text: "", isActive: true };
   imageFile.value = null;
   imagePreview.value = null;
+  if (fileInput.value) fileInput.value.value = '';
   modal.value = { visible: true, type: "edit" };
 }
 
 function openEditModal(exhibition) {
   editMode.value = true;
   selectedExhibition.value = exhibition;
-  form.value = { ...exhibition };
+
+  // boolean sauber normalisieren (1/"1"/true => true)
+  const isActiveValue =
+    exhibition.isActive === true ||
+    exhibition.isActive === 1 ||
+    exhibition.isActive === "1";
+
+  form.value = {
+    id: exhibition.id ?? "",
+    title: exhibition.title ?? "",
+    description: exhibition.description ?? "",
+    text: exhibition.text ?? "",
+    image: exhibition.image ?? "",
+    isActive: isActiveValue
+  };
   imageFile.value = null;
   imagePreview.value = exhibition.image || null;
+  if (fileInput.value) fileInput.value.value = '';
   modal.value = { visible: true, type: "edit" };
 }
 
@@ -572,8 +583,12 @@ function closeModal() {
   modal.value.visible = false;
   setTimeout(() => {
     form.value = { title: "", description: "", image: "", text: "", isActive: true };
+    if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+      URL.revokeObjectURL(imagePreview.value);
+    }
     imageFile.value = null;
     imagePreview.value = null;
+    if (fileInput.value) fileInput.value.value = '';
     isSubmitting.value = false;
   }, 300);
 }
@@ -586,16 +601,18 @@ function confirmDelete(id) {
 
 // IMAGE
 function handleImage(event) {
-  const file = event.target.files[0];
+  const file = event.target.files?.[0];
   if (!file) return;
 
-  // Validate file size (5MB)
   if (file.size > 5 * 1024 * 1024) {
     showToast("Bild ist zu groß (max. 5MB)", "error");
     return;
   }
 
   imageFile.value = file;
+  if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(imagePreview.value);
+  }
   imagePreview.value = URL.createObjectURL(file);
 }
 
@@ -613,28 +630,33 @@ function removeImage() {
 // CRUD
 async function saveExhibition() {
   if (isSubmitting.value) return;
-
   isSubmitting.value = true;
+
   try {
+    const title = form.value.title?.trim() ?? "";
+    const description = form.value.description?.trim() ?? "";
+    const text = form.value.text?.trim() ?? "";
+    const isActive = !!form.value.isActive;
+
     if (editMode.value) {
-      // Bei Update: alle Parameter übergeben
+      // Update: Service entscheidet JSON vs. FormData anhand imageFile (File/null)
+      const id = form.value.id || selectedExhibition.value.id;
       await store.updateExhibition(
-        form.value.id,
-        form.value.title.trim(),
-        form.value.description?.trim() || "",
-        imageFile.value, // Bild-Datei oder null
-        form.value.text?.trim() || "",
-        form.value.isActive
+        id,
+        title,
+        description,
+        imageFile.value,   // File oder null
+        text,
+        isActive
       );
       showToast("Ausstellung erfolgreich aktualisiert!", "success");
     } else {
-      // Bei Create: FormData erstellen
+      // Create: immer FormData
       const fd = new FormData();
-      fd.append("title", form.value.title.trim());
-      fd.append("description", form.value.description?.trim() || "");
-      fd.append("text", form.value.text?.trim() || "");
-      fd.append("isActive", form.value.isActive ? "1" : "0");
-
+      fd.append("title", title);
+      fd.append("description", description);
+      fd.append("text", text);
+      fd.append("isActive", isActive ? 1 : 0);
       if (imageFile.value) {
         fd.append("image", imageFile.value);
       }
@@ -647,13 +669,10 @@ async function saveExhibition() {
     await store.fetchExhibitions(keyword.value, sort.value);
   } catch (error) {
     console.error("Fehler beim Speichern:", error);
-
-    // Detaillierte Fehlerausgabe für Debugging
-    if (error.response?.data?.errors) {
+    if (error?.response?.data?.errors) {
       const errors = Object.values(error.response.data.errors).flat();
       showToast(errors[0] || "Validierungsfehler", "error");
-      console.error("Validierungsfehler:", error.response.data.errors);
-    } else if (error.response?.data?.message) {
+    } else if (error?.response?.data?.message) {
       showToast(error.response.data.message, "error");
     } else {
       showToast("Fehler beim Speichern", "error");
@@ -665,7 +684,6 @@ async function saveExhibition() {
 
 async function deleteExhibition() {
   if (isDeleting.value) return;
-
   isDeleting.value = true;
   try {
     await store.deleteExhibition(exhibitionToDelete.value);
@@ -684,14 +702,8 @@ async function deleteExhibition() {
 
 <style scoped>
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .line-clamp-2 {
@@ -702,49 +714,22 @@ async function deleteExhibition() {
 }
 
 /* Modal Transitions */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-.modal-enter-active > div,
-.modal-leave-active > div {
-  transition: transform 0.3s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.modal-enter-from > div {
-  transform: scale(0.95) translateY(20px);
-}
-.modal-leave-to > div {
-  transform: scale(0.95) translateY(20px);
-}
+.modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
+.modal-enter-active > div, .modal-leave-active > div { transition: transform 0.3s ease; }
+.modal-enter-from, .modal-leave-to { opacity: 0; }
+.modal-enter-from > div { transform: scale(0.95) translateY(20px); }
+.modal-leave-to > div { transform: scale(0.95) translateY(20px); }
 
 /* Mobile Modal - slide up */
 @media (max-width: 768px) {
-  .modal-enter-from > div {
-    transform: translateY(100%);
-  }
-  .modal-leave-to > div {
-    transform: translateY(100%);
-  }
+  .modal-enter-from > div { transform: translateY(100%); }
+  .modal-leave-to > div { transform: translateY(100%); }
 }
 
 /* Toast Transitions */
-.toast-enter-active,
-.toast-leave-active {
-  transition: all 0.3s ease;
-}
-.toast-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-.toast-leave-to {
-  opacity: 0;
-  transform: translateX(50px);
-}
-.toast-move {
-  transition: transform 0.3s ease;
-}
+.toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
+.toast-enter-from { transform: translateX(100%); opacity: 0; }
+.toast-leave-to { opacity: 0; transform: translateX(50px); }
+.toast-move { transition: transform 0.3s ease; }
 </style>
+section

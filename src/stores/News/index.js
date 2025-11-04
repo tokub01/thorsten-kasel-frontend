@@ -63,11 +63,11 @@ export const useNewsStore = defineStore('news', {
     },
 
     // News aktualisieren
-    async updateNews(id, title, description, image, text) {
+    async updateNews(id, title, description, image, text, isActive) {
       this.loading = true
       this.error = null
       try {
-        const data = await NewsService.update(id, title, description, image, text)
+        const data = await NewsService.update(id, title, description, image, text, isActive)
         const index = this.news.findIndex((n) => n.id === id)
         if (index !== -1) this.news[index] = data
         return data

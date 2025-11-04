@@ -1,9 +1,12 @@
+// @/services/Exhibitions/index.js
 import API from "../API";
 
 export async function index(keyword, sort) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-        const response = await API.get(`${process.env.VUE_APP_API_URL}/api/exhibitions?keyword=${keyword}&sort=${sort}`);
+        const response = await API.get(`${process.env.VUE_APP_API_URL}/api/exhibitions`, {
+            params: { keyword, sort }
+        });
         return response.data;
     } catch (error) {
         console.error("Laden der Ausstellungen fehlgeschlagen.", error);
@@ -25,8 +28,6 @@ export async function show(exhibition_id) {
 export async function store(formData) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
-        // FormData direkt senden für Datei-Upload
         const response = await API.post(
             `${process.env.VUE_APP_API_URL}/api/exhibitions`,
             formData,
@@ -54,7 +55,7 @@ export async function update(exhibition_id, exhibition_title, exhibition_descrip
             formData.append('title', exhibition_title ?? '');
             formData.append('description', exhibition_description ?? '');
             formData.append('text', exhibition_text ?? '');
-            formData.append('isActive', exhibition_isActive ? '1' : '0');
+            formData.append('isActive', exhibition_isActive); // ✅ String
             formData.append('image', exhibition_image);
 
             const response = await API.post(
@@ -69,13 +70,15 @@ export async function update(exhibition_id, exhibition_title, exhibition_descrip
             return response.data;
         } else {
             // Ohne Bild: normales JSON
-            const response = await API.put(
+            const response = await API.post(
                 `${process.env.VUE_APP_API_URL}/api/exhibitions/${exhibition_id}`,
                 {
+                    _method: "PUT",
                     title: exhibition_title ?? null,
                     description: exhibition_description ?? null,
                     text: exhibition_text ?? null,
-                    isActive: exhibition_isActive ? 1 : 0,
+                    image: null,
+                    isActive: exhibition_isActive ? 1 : 0, // ✅ Number für JSON
                 }
             );
             return response.data;

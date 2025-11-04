@@ -1,5 +1,14 @@
+// @/stores/Exhibitions/index.js
 import { defineStore } from "pinia";
 import * as ExhibitionsService from "@/services/Exhibitions";
+
+// Hilfsfunktion zum Normalisieren von isActive
+const normalizeIsActive = (exhibition) => ({
+  ...exhibition,
+  isActive: Boolean(exhibition.isActive) ||
+            exhibition.isActive === 1 ||
+            exhibition.isActive === "1"
+});
 
 export const useExhibitionsStore = defineStore("exhibitions", {
   state: () => ({
@@ -8,19 +17,20 @@ export const useExhibitionsStore = defineStore("exhibitions", {
     loading: false,
     error: null,
   }),
-
   actions: {
     async fetchExhibitions(keyword = "", sort = "desc") {
       this.loading = true;
       this.error = null;
       try {
         const data = await ExhibitionsService.index(keyword, sort);
-        // Sicherstellen, dass immer ein Array gespeichert wird
-        this.exhibitions = Array.isArray(data) ? data : data.data || [];
+        const rawExhibitions = Array.isArray(data) ? data : data.data || [];
+
+        // isActive normalisieren
+        this.exhibitions = rawExhibitions.map(normalizeIsActive);
       } catch (error) {
         console.error("Fehler beim Laden der Ausstellungen:", error);
         this.error = error;
-        this.exhibitions = []; // Leeres Array bei Fehler
+        this.exhibitions = [];
       } finally {
         this.loading = false;
       }
@@ -31,8 +41,8 @@ export const useExhibitionsStore = defineStore("exhibitions", {
       this.error = null;
       try {
         const data = await ExhibitionsService.show(id);
-        this.currentExhibition = data;
-        return data;
+        this.currentExhibition = normalizeIsActive(data);
+        return this.currentExhibition;
       } catch (error) {
         console.error("Fehler beim Laden der Ausstellung:", error);
         this.error = error;
@@ -47,12 +57,9 @@ export const useExhibitionsStore = defineStore("exhibitions", {
       this.error = null;
       try {
         const data = await ExhibitionsService.store(formData);
-
-        // Zur Liste hinzufügen falls erfolgreich
         if (data && Array.isArray(this.exhibitions)) {
-          this.exhibitions.unshift(data);
+          this.exhibitions.unshift(normalizeIsActive(data));
         }
-
         return data;
       } catch (error) {
         console.error("Fehler beim Erstellen der Ausstellung:", error);
@@ -69,20 +76,22 @@ export const useExhibitionsStore = defineStore("exhibitions", {
       try {
         const data = await ExhibitionsService.update(id, title, description, image, text, isActive);
 
+        const normalizedData = normalizeIsActive(data);
+
         // In Liste aktualisieren
-        if (data && Array.isArray(this.exhibitions)) {
+        if (Array.isArray(this.exhibitions)) {
           const index = this.exhibitions.findIndex(e => e.id === id);
           if (index !== -1) {
-            this.exhibitions[index] = data;
+            this.exhibitions[index] = normalizedData;
           }
         }
 
         // Current exhibition aktualisieren
         if (this.currentExhibition?.id === id) {
-          this.currentExhibition = data;
+          this.currentExhibition = normalizedData;
         }
 
-        return data;
+        return normalizedData;
       } catch (error) {
         console.error("Fehler beim Aktualisieren der Ausstellung:", error);
         this.error = error;
@@ -97,17 +106,12 @@ export const useExhibitionsStore = defineStore("exhibitions", {
       this.error = null;
       try {
         await ExhibitionsService.destroy(id);
-
-        // Aus Liste entfernen
         if (Array.isArray(this.exhibitions)) {
           this.exhibitions = this.exhibitions.filter((e) => e.id !== id);
         }
-
-        // Current exhibition zurücksetzen falls gelöscht
         if (this.currentExhibition?.id === id) {
           this.currentExhibition = null;
         }
-
       } catch (error) {
         console.error("Fehler beim Löschen der Ausstellung:", error);
         this.error = error;
