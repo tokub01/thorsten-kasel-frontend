@@ -37,8 +37,7 @@ export const useCategoryStore = defineStore('categories', {
                 const data = await CategoryService.index();
                 this.categories = Array.isArray(data) ? data : [];
 
-                console.log('📦 Loaded categories:', this.categories);
-                console.log('📊 First category structure:', this.categories[0]);
+                console.log('📦 Loaded categories:', this.categories.length);
             } catch (error) {
                 console.error('Error loading categories:', error);
                 this.error = error;
@@ -121,17 +120,27 @@ export const useCategoryStore = defineStore('categories', {
                 categoryId,
                 categoryName,
                 productId,
-                categoryIdType: typeof categoryId
+                categoryIdType: typeof categoryId,
+                productIdType: typeof productId
             });
 
             try {
-                // CategoryService.update erwartet: (category_id, category_name, product_id)
-                // Component ruft auf: updateCategory(categoryId, categoryName, productId)
-                // Also direkt weitergeben:
+                // Hole die aktuelle Kategorie
+                const currentCategory = this.categories.find(c => c.id === categoryId);
+
+                if (currentCategory) {
+                    console.log('📊 Current category state:', {
+                        id: currentCategory.id,
+                        name: currentCategory.name,
+                        product_id: currentCategory.product_id
+                    });
+                }
+
+                // Rufe Service mit korrekten Parametern auf
                 const updatedCategory = await CategoryService.update(
                     categoryId,      // category_id
                     categoryName,    // category_name
-                    productId        // product_id
+                    productId        // product_id (kann null sein)
                 );
 
                 console.log('✅ Update response:', updatedCategory);
@@ -143,7 +152,13 @@ export const useCategoryStore = defineStore('categories', {
                 if (Array.isArray(this.categories)) {
                     const index = this.categories.findIndex(c => c.id === categoryId);
                     if (index !== -1) {
+                        // Komplettes Object ersetzen
                         this.categories.splice(index, 1, categoryData);
+                        console.log('✅ Category updated in store at index:', index);
+                    } else {
+                        console.warn('⚠️ Category not found in store, will reload');
+                        // Fallback: Neu laden
+                        await this.loadAllCategories();
                     }
                 }
 
@@ -157,14 +172,20 @@ export const useCategoryStore = defineStore('categories', {
                 console.error('❌ Error updating category:', error);
                 console.error('❌ Error details:', {
                     status: error.response?.status,
+                    statusText: error.response?.statusText,
                     data: error.response?.data,
-                    config: error.config
+                    message: error.message
                 });
+
                 this.error = error;
 
                 if (error.response?.status === 422) {
                     this.errors = error.response.data.errors;
+
+                    // Zeige spezifische Validierungsfehler
+                    console.error('❌ Validation errors:', this.errors);
                 }
+
                 throw error;
             } finally {
                 this.loading = false;

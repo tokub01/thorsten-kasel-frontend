@@ -4,9 +4,7 @@ import API from "../API";
 export async function index(keyword = "", sort = "") {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
         const response = await API.get(`${process.env.VUE_APP_API_URL}/api/users?keyword=${keyword}&sort=${sort}`);
-
         return response.data;
     } catch (error) {
         console.error("Laden der Benutzer fehlgeschlagen.", error);
@@ -18,9 +16,7 @@ export async function index(keyword = "", sort = "") {
 export async function show(user_id) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
         const response = await API.get(`${process.env.VUE_APP_API_URL}/api/users/${user_id}`);
-
         return response.data;
     } catch (error) {
         console.error("Laden des Benutzers fehlgeschlagen.", error);
@@ -32,9 +28,7 @@ export async function show(user_id) {
 export async function getBiography(user_id) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
         const response = await API.get(`${process.env.VUE_APP_API_URL}/api/users/${user_id}/biography`);
-
         return response.data;
     } catch (error) {
         console.error("Laden der Biografie fehlgeschlagen.", error);
@@ -46,7 +40,6 @@ export async function getBiography(user_id) {
 export async function store(formData) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
         const response = await API.post(`${process.env.VUE_APP_API_URL}/api/users`, {
             email: formData.get('email'),
             name: formData.get('name'),
@@ -54,7 +47,6 @@ export async function store(formData) {
             password_confirmation: formData.get('password_confirmation'),
             biography: formData.get('biography') ?? null,
         });
-
         return response.data;
     } catch (error) {
         console.error("Speichern des Benutzers fehlgeschlagen.", error);
@@ -71,7 +63,7 @@ export async function update(userId, email, name, password = null, biography = n
             _method: "PUT",
             email: email ?? null,
             name: name ?? null,
-            biography : biography ?? null,
+            biography: biography ?? null,
         };
 
         if (password) {
@@ -79,13 +71,17 @@ export async function update(userId, email, name, password = null, biography = n
             payload.password_confirmation = password;
         }
 
-
+        console.log('📤 User Update Payload:', {
+            userId,
+            hasBiography: !!biography,
+            biographyLength: biography ? biography.length : 0,
+        });
 
         const response = await API.post(`${process.env.VUE_APP_API_URL}/api/users/${userId}`, payload);
-
         return response.data;
     } catch (error) {
         console.error("Aktualisieren des Benutzers fehlgeschlagen.", error);
+        console.error("Error details:", error.response?.data);
         throw error;
     }
 }
@@ -94,9 +90,7 @@ export async function update(userId, email, name, password = null, biography = n
 export async function destroy(user_id) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
         const response = await API.delete(`${process.env.VUE_APP_API_URL}/api/users/${user_id}`);
-
         return response.data;
     } catch (error) {
         console.error("Löschen des Benutzers fehlgeschlagen.", error);

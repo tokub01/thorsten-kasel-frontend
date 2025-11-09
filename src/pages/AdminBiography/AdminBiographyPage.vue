@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-3ßß px-4 py-8 md:py-10 min-h-screen">
+  <div class="bg-gray-300 px-4 py-8 md:py-10 min-h-screen">
     <div class="mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden max-w-5xl">
 
       <!-- Header -->
@@ -108,8 +108,8 @@
             <div>
               <h3 class="font-bold text-gray-900 mb-1">Tipps zum Bearbeiten</h3>
               <ul class="text-sm text-gray-700 space-y-1">
-                <li>• Verwende Überschriften für eine bessere Struktur</li>
-                <li>• Füge Bilder direkt über das Bild-Icon ein</li>
+                <li>• Bilder werden automatisch komprimiert (max. 800px Breite)</li>
+                <li>• Empfohlene Bildgröße: unter 2MB</li>
                 <li>• Nutze Listen für übersichtliche Aufzählungen</li>
                 <li>• Speichere regelmäßig deine Änderungen</li>
               </ul>
@@ -140,7 +140,7 @@
       </transition-group>
     </div>
 
-    <!-- Image Controls Modal (für Bildanpassung) -->
+    <!-- Image Controls Modal -->
     <teleport to="body">
       <transition name="fade">
         <div v-if="showImageControls" @click="closeImageControls" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
@@ -266,8 +266,54 @@ const showToast = (message, type = 'success') => {
 }
 const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id)
 
-// Custom Image Handler
-function imageHandler() {
+// Neue Funktion: Bild komprimieren
+function compressImage(file, maxWidth = 800, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = (e) => {
+      const img = new Image()
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
+
+        // Skaliere runter wenn zu groß
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+
+        // Konvertiere zu komprimiertem Base64
+        const compressedBase64 = canvas.toDataURL('image/jpeg', quality)
+
+        console.log('📊 Image compression:', {
+          original: (file.size / 1024).toFixed(2) + 'KB',
+          compressed: (compressedBase64.length / 1024).toFixed(2) + 'KB',
+          ratio: ((compressedBase64.length / file.size) * 100).toFixed(1) + '%'
+        })
+
+        resolve(compressedBase64)
+      }
+
+      img.onerror = reject
+      img.src = e.target.result
+    }
+
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
+// Custom Image Handler - VERBESSERT für Upload
+async function imageHandler() {
   const input = document.createElement('input')
   input.setAttribute('type', 'file')
   input.setAttribute('accept', 'image/*')
@@ -276,21 +322,28 @@ function imageHandler() {
     const file = input.files[0]
     if (!file) return
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Bild ist zu groß. Maximal 5MB erlaubt.', 'error')
+    // Validate file size (max 2MB für bessere Performance)
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('Bild ist zu groß. Maximal 2MB erlaubt.', 'error')
       return
     }
 
-    // Convert to base64
-    const reader = new FileReader()
-    reader.onload = (e) => {
+    try {
+      showToast('Bild wird komprimiert...', 'info')
+
+      // Komprimiere Bild
+      const compressedBase64 = await compressImage(file)
+
+      // Füge komprimiertes Bild ein
       const range = quill.value.getSelection(true)
-      quill.value.insertEmbed(range.index, 'image', e.target.result)
+      quill.value.insertEmbed(range.index, 'image', compressedBase64)
       quill.value.setSelection(range.index + 1)
+
       showToast('Bild erfolgreich eingefügt!', 'success')
+    } catch (error) {
+      console.error('Fehler beim Bildupload:', error)
+      showToast('Fehler beim Einfügen des Bildes', 'error')
     }
-    reader.readAsDataURL(file)
   }
 
   input.click()
@@ -364,6 +417,14 @@ async function saveBiography() {
     saving.value = true
     const newBio = quill.value.root.innerHTML
     const userId = 1
+
+    // Prüfe Größe der Biographie
+    const bioSize = new Blob([newBio]).size
+    console.log('📊 Biography size:', (bioSize / 1024).toFixed(2) + 'KB')
+
+    if (bioSize > 500 * 1024) { // Warnung bei > 500KB
+      showToast('Warnung: Biographie ist sehr groß. Dies kann zu Problemen führen.', 'error')
+    }
 
     const userData = await userStore.fetchUser(userId)
 

@@ -40,6 +40,7 @@ export async function store(category_name, product_id = null) {
             `${process.env.VUE_APP_API_URL}/api/categories`,
             payload
         );
+
         return response.data;
     } catch (error) {
         console.error("Speichern der Kategorie fehlgeschlagen", error);
@@ -52,12 +53,15 @@ export async function update(category_id, category_name, product_id = null) {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
+        // Laravel benötigt _method: "PUT" mit POST für Formulare
         const payload = {
             _method: "PUT",
-            name: category_name
+            name: category_name  // Name ist IMMER erforderlich
         };
 
-        if (product_id !== null && product_id !== undefined) {
+        // product_id hinzufügen wenn vorhanden
+        // null = Produkt entfernen, undefined = nicht ändern
+        if (product_id !== undefined) {
             payload.product_id = product_id;
         }
 
@@ -66,6 +70,7 @@ export async function update(category_id, category_name, product_id = null) {
             payload
         });
 
+        // Verwende POST mit _method="PUT" für Laravel
         const response = await API.post(
             `${process.env.VUE_APP_API_URL}/api/categories/${category_id}`,
             payload
@@ -77,6 +82,11 @@ export async function update(category_id, category_name, product_id = null) {
     } catch (error) {
         console.error("Aktualisieren der Kategorie fehlgeschlagen", error);
         console.error("Response data:", error.response?.data);
+        console.error("Request payload was:", {
+            category_id,
+            category_name,
+            product_id
+        });
         throw error;
     }
 }
