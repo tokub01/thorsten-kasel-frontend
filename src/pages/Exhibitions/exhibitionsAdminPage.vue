@@ -1,5 +1,5 @@
 <template>
-  <section class="bg-gray-300 to-gray-300 p-4 md:p-8 min-h-screen">
+  <section class="bg-gray-300 p-4 md:p-8 min-h-screen">
     <div class="max-w-7xl mx-auto">
 
       <!-- HEADER -->
@@ -30,6 +30,7 @@
               <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 v-model="keyword"
+                @input="debouncedSearch"
                 placeholder="Ausstellungen durchsuchen..."
                 class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
               />
@@ -37,16 +38,18 @@
             <div class="flex gap-3">
               <select
                 v-model="sort"
+                @change="handleSortChange"
                 class="flex-1 border-2 border-gray-200 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
               >
                 <option value="desc">📅 Neueste zuerst</option>
                 <option value="asc">📅 Älteste zuerst</option>
               </select>
               <button
-                @click="store.fetchExhibitions(keyword, sort)"
-                class="px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all flex items-center gap-2 font-semibold shadow-sm hover:shadow-md"
+                @click="refreshExhibitions"
+                :disabled="store.loading"
+                class="px-4 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-xl hover:from-gray-200 hover:to-gray-300 transition-all flex items-center gap-2 font-semibold shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw class="w-5 h-5" />
+                <RefreshCw :class="['w-5 h-5', { 'animate-spin': store.loading }]" />
               </button>
             </div>
           </div>
@@ -56,8 +59,8 @@
         <div class="mt-6 bg-white rounded-2xl shadow-md p-4 md:p-6 border border-gray-100">
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div class="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
-              <p class="text-3xl font-bold text-purple-600">{{ totalExhibitions }}</p>
-              <p class="text-sm text-gray-600 font-medium mt-1">Ausstellungen</p>
+              <p class="text-3xl font-bold text-purple-600">{{ store.totalCount }}</p>
+              <p class="text-sm text-gray-600 font-medium mt-1">Gesamt</p>
             </div>
             <div class="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
               <p class="text-3xl font-bold text-blue-600">{{ filteredExhibitions.length }}</p>
@@ -72,7 +75,7 @@
       </div>
 
       <!-- LOADING -->
-      <div v-if="store.loading" class="flex flex-col items-center justify-center py-20">
+      <div v-if="store.loading && !store.exhibitions.length" class="flex flex-col items-center justify-center py-20">
         <div class="relative">
           <Loader2 class="w-16 h-16 text-purple-600 animate-spin" />
           <div class="absolute inset-0 flex items-center justify-center">
@@ -84,15 +87,17 @@
 
       <!-- ERROR -->
       <div
-        v-else-if="store.error"
+        v-else-if="store.error && !store.exhibitions.length"
         class="bg-white rounded-2xl shadow-md border-2 border-red-200 p-8 text-center"
       >
         <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertCircle class="w-8 h-8 text-red-600" />
         </div>
-        <p class="text-red-600 font-semibold text-lg mb-4">Fehler beim Laden: {{ store.error.message }}</p>
+        <p class="text-red-600 font-semibold text-lg mb-4">
+          Fehler beim Laden: {{ store.error?.message || 'Unbekannter Fehler' }}
+        </p>
         <button
-          @click="store.fetchExhibitions(keyword, sort)"
+          @click="refreshExhibitions"
           class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:shadow-xl transition font-semibold"
         >
           Erneut versuchen
@@ -114,10 +119,11 @@
           <div class="relative h-48 md:h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
             <img
               v-if="exhibition.image"
-              :src="exhibition.image"
+              :src="getImageUrl(exhibition.image)"
               :alt="exhibition.title"
               class="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
               loading="lazy"
+              @error="handleImageError"
             />
             <div v-else class="flex items-center justify-center h-full text-gray-400">
               <ImageIcon class="w-12 h-12" />
@@ -164,14 +170,27 @@
         <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <ImageIcon class="w-10 h-10 text-gray-400" />
         </div>
-        <p class="text-gray-500 text-xl font-semibold mb-2">Keine Ausstellungen vorhanden</p>
-        <p class="text-gray-400 text-sm mb-6">Erstelle deine erste Ausstellung mit dem Button oben</p>
+        <p class="text-gray-500 text-xl font-semibold mb-2">
+          {{ keyword ? 'Keine Ergebnisse gefunden' : 'Keine Ausstellungen vorhanden' }}
+        </p>
+        <p class="text-gray-400 text-sm mb-6">
+          {{ keyword ? 'Versuche einen anderen Suchbegriff' : 'Erstelle deine erste Ausstellung mit dem Button oben' }}
+        </p>
         <button
+          v-if="!keyword"
           @click="openCreateModal"
           class="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all font-semibold"
         >
           <Plus class="w-5 h-5" />
           Erste Ausstellung erstellen
+        </button>
+        <button
+          v-else
+          @click="clearSearch"
+          class="inline-flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-xl hover:shadow-xl transition-all font-semibold"
+        >
+          <X class="w-5 h-5" />
+          Suche zurücksetzen
         </button>
       </div>
     </div>
@@ -205,9 +224,10 @@
             <div class="p-6 space-y-4">
               <img
                 v-if="selectedExhibition.image"
-                :src="selectedExhibition.image"
+                :src="getImageUrl(selectedExhibition.image)"
                 :alt="selectedExhibition.title"
                 class="rounded-xl w-full max-h-96 object-cover shadow-lg border-2 border-gray-200"
+                @error="handleImageError"
               />
               <div v-if="selectedExhibition.description" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200">
                 <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
@@ -298,7 +318,6 @@
                   alt="Vorschau"
                 />
                 <button
-                  v-if="imageFile"
                   @click="removeImage"
                   type="button"
                   class="absolute top-3 right-3 bg-red-600 text-white p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-700"
@@ -309,7 +328,7 @@
             </div>
 
             <!-- Form -->
-            <div class="p-6 space-y-5">
+            <form @submit.prevent="saveExhibition" class="p-6 space-y-5">
               <div class="space-y-2">
                 <label class="text-gray-700 font-bold flex items-center gap-2">
                   <FileText class="w-4 h-4 text-purple-600" />
@@ -319,6 +338,7 @@
                   v-model="form.title"
                   placeholder="z.B. Moderne Kunst 2024"
                   required
+                  maxlength="255"
                   class="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
                 />
               </div>
@@ -332,8 +352,10 @@
                   v-model="form.description"
                   placeholder="Kurze Zusammenfassung der Ausstellung..."
                   rows="3"
+                  maxlength="500"
                   class="w-full border-2 border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition resize-none"
                 ></textarea>
+                <p class="text-xs text-gray-500">{{ form.description?.length || 0 }} / 500 Zeichen</p>
               </div>
 
               <div class="space-y-2">
@@ -345,12 +367,12 @@
                   type="file"
                   ref="fileInput"
                   @change="handleImage"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                   class="w-full border-2 border-gray-200 rounded-xl p-3 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-purple-500 file:to-purple-600 file:text-white hover:file:shadow-lg file:cursor-pointer cursor-pointer file:font-semibold transition"
                 />
                 <p class="text-xs text-gray-500 flex items-center gap-1.5">
                   <Info class="w-3.5 h-3.5" />
-                  Empfohlen: 1200x800px, max. 5MB
+                  Empfohlen: 1200x800px, max. 5MB (JPG, PNG, GIF, WebP)
                 </p>
               </div>
 
@@ -385,12 +407,13 @@
                 <button
                   type="button"
                   @click="closeModal"
-                  class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-semibold"
+                  :disabled="isSubmitting"
+                  class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Abbrechen
                 </button>
                 <button
-                  @click="saveExhibition"
+                  type="submit"
                   :disabled="isSubmitting || !form.title.trim()"
                   class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-xl transition-all font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -399,7 +422,7 @@
                   {{ editMode ? 'Speichern' : 'Erstellen' }}
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </transition>
@@ -425,7 +448,8 @@
               <div class="flex flex-col sm:flex-row gap-3">
                 <button
                   @click="showDeleteModal = false"
-                  class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-semibold"
+                  :disabled="isDeleting"
+                  class="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Abbrechen
                 </button>
@@ -474,14 +498,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useExhibitionsStore } from "@/stores/Exhibitions";
 import {
   Plus, Edit2, Trash2, X, Save, ImageIcon, FileText, AlignLeft,
   Calendar, Loader2, AlertCircle, AlertTriangle, CheckCircle2,
   XCircle, Info, RefreshCw, Search, Eye
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
+// ===== STORE & STATE =====
 const store = useExhibitionsStore();
 const keyword = ref("");
 const sort = ref("desc");
@@ -498,57 +523,149 @@ const exhibitionToDelete = ref(null);
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
 
-const form = ref({ id: "", title: "", description: "", image: "", text: "", isActive: true });
+const form = ref({
+  id: "",
+  title: "",
+  description: "",
+  image: "",
+  text: "",
+  isActive: true
+});
+
 const imageFile = ref(null);
 const imagePreview = ref(null);
 const fileInput = ref(null);
 
-// TOASTS
-let toastId = 0
+// ===== TOASTS =====
+let toastId = 0;
 const toasts = ref([]);
+
 const showToast = (message, type = 'success') => {
-  const id = ++toastId
+  const id = ++toastId;
   toasts.value.push({ id, message, type });
-  setTimeout(() => toasts.value = toasts.value.filter(t => t.id !== id), 4000);
-}
-const removeToast = (id) => toasts.value = toasts.value.filter(t => t.id !== id)
+  setTimeout(() => {
+    toasts.value = toasts.value.filter(t => t.id !== id);
+  }, 4000);
+};
 
-onMounted(() => store.fetchExhibitions(keyword.value, sort.value));
+const removeToast = (id) => {
+  toasts.value = toasts.value.filter(t => t.id !== id);
+};
 
+// ===== LIFECYCLE =====
+onMounted(async () => {
+  try {
+    await store.fetchExhibitions(keyword.value, sort.value);
+  } catch (error) {
+    console.error("Fehler beim initialen Laden:", error);
+  }
+});
+
+onUnmounted(() => {
+  // Cleanup blob URLs
+  if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(imagePreview.value);
+  }
+});
+
+// ===== COMPUTED =====
 const filteredExhibitions = computed(() => {
   const list = Array.isArray(store.exhibitions) ? store.exhibitions : [];
-  const key = keyword.value.toLowerCase();
+  const key = keyword.value.toLowerCase().trim();
+
+  if (!key) return list;
+
   return list.filter((e) =>
-    [e.title, e.description].some((f) => f?.toLowerCase().includes(key))
+    [e.title, e.description, e.text].some((field) =>
+      field?.toLowerCase().includes(key)
+    )
   );
 });
 
-const totalExhibitions = computed(() =>
-  Array.isArray(store.exhibitions) ? store.exhibitions.length : 0
-)
-
 const exhibitionsWithImages = computed(() =>
-  Array.isArray(store.exhibitions) ? store.exhibitions.filter(e => e.image).length : 0
-)
+  Array.isArray(store.exhibitions)
+    ? store.exhibitions.filter(e => e.image).length
+    : 0
+);
 
+// ===== DEBOUNCE SEARCH =====
+let searchTimeout = null;
+const debouncedSearch = () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    // Filter wird über computed automatisch angewendet
+  }, 300);
+};
+
+// ===== HELPERS =====
 function formatDate(date) {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  });
+  try {
+    return new Date(date).toLocaleDateString("de-DE", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
 }
 
-// MODAL HANDLING
+function getImageUrl(image) {
+  if (!image) return "";
+
+  // Wenn es bereits eine vollständige URL ist
+  if (image.startsWith('http://') || image.startsWith('https://')) {
+    return image;
+  }
+
+  // Wenn es ein Blob-URL ist
+  if (image.startsWith('blob:')) {
+    return image;
+  }
+
+  // Ansonsten API-URL voranstellen
+  return `${process.env.VUE_APP_API_URL}/storage/${image}`;
+}
+
+function handleImageError(event) {
+  console.error("Fehler beim Laden des Bildes:", event.target.src);
+  event.target.src = ''; // Placeholder oder Fallback
+}
+
+function clearSearch() {
+  keyword.value = "";
+}
+
+async function refreshExhibitions() {
+  try {
+    await store.fetchExhibitions(keyword.value, sort.value);
+    showToast("Ausstellungen aktualisiert", "success");
+  } catch (error) {
+    showToast("Fehler beim Aktualisieren", "error");
+  }
+}
+
+function handleSortChange() {
+  refreshExhibitions();
+}
+
+// ===== MODAL HANDLING =====
 function openViewModal(exhibition) {
-  selectedExhibition.value = exhibition;
+  selectedExhibition.value = { ...exhibition };
   modal.value = { visible: true, type: "view" };
 }
 
 function openCreateModal() {
   editMode.value = false;
-  form.value = { id: "", title: "", description: "", image: "", text: "", isActive: true };
+  form.value = {
+    id: "",
+    title: "",
+    description: "",
+    image: "",
+    text: "",
+    isActive: true
+  };
   imageFile.value = null;
   imagePreview.value = null;
   if (fileInput.value) fileInput.value.value = '';
@@ -557,13 +674,14 @@ function openCreateModal() {
 
 function openEditModal(exhibition) {
   editMode.value = true;
-  selectedExhibition.value = exhibition;
+  selectedExhibition.value = { ...exhibition };
 
-  // boolean sauber normalisieren (1/"1"/true => true)
-  const isActiveValue =
+  // Boolean korrekt normalisieren
+  const isActiveValue = Boolean(
     exhibition.isActive === true ||
     exhibition.isActive === 1 ||
-    exhibition.isActive === "1";
+    exhibition.isActive === "1"
+  );
 
   form.value = {
     id: exhibition.id ?? "",
@@ -573,23 +691,36 @@ function openEditModal(exhibition) {
     image: exhibition.image ?? "",
     isActive: isActiveValue
   };
+
   imageFile.value = null;
-  imagePreview.value = exhibition.image || null;
+  imagePreview.value = exhibition.image ? getImageUrl(exhibition.image) : null;
   if (fileInput.value) fileInput.value.value = '';
   modal.value = { visible: true, type: "edit" };
 }
 
 function closeModal() {
   modal.value.visible = false;
+
   setTimeout(() => {
-    form.value = { title: "", description: "", image: "", text: "", isActive: true };
+    form.value = {
+      id: "",
+      title: "",
+      description: "",
+      image: "",
+      text: "",
+      isActive: true
+    };
+
+    // Cleanup blob URL
     if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
       URL.revokeObjectURL(imagePreview.value);
     }
+
     imageFile.value = null;
     imagePreview.value = null;
     if (fileInput.value) fileInput.value.value = '';
     isSubmitting.value = false;
+    editMode.value = false;
   }, 300);
 }
 
@@ -599,66 +730,91 @@ function confirmDelete(id) {
   closeModal();
 }
 
-// IMAGE
+// ===== IMAGE HANDLING =====
 function handleImage(event) {
   const file = event.target.files?.[0];
   if (!file) return;
 
+  // Validierung: Dateigröße
   if (file.size > 5 * 1024 * 1024) {
     showToast("Bild ist zu groß (max. 5MB)", "error");
+    if (fileInput.value) fileInput.value.value = '';
     return;
   }
 
-  imageFile.value = file;
+  // Validierung: Dateityp
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    showToast("Ungültiges Bildformat", "error");
+    if (fileInput.value) fileInput.value.value = '';
+    return;
+  }
+
+  // Cleanup old blob URL
   if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
     URL.revokeObjectURL(imagePreview.value);
   }
+
+  imageFile.value = file;
   imagePreview.value = URL.createObjectURL(file);
 }
 
 function removeImage() {
   imageFile.value = null;
+
   if (imagePreview.value && imagePreview.value.startsWith('blob:')) {
     URL.revokeObjectURL(imagePreview.value);
   }
+
   imagePreview.value = null;
+  form.value.image = "";
+
   if (fileInput.value) {
     fileInput.value.value = '';
   }
 }
 
-// CRUD
+// ===== CRUD OPERATIONS =====
 async function saveExhibition() {
   if (isSubmitting.value) return;
+  if (!form.value.title?.trim()) {
+    showToast("Titel ist erforderlich", "error");
+    return;
+  }
+
   isSubmitting.value = true;
 
   try {
-    const title = form.value.title?.trim() ?? "";
-    const description = form.value.description?.trim() ?? "";
-    const text = form.value.text?.trim() ?? "";
-    const isActive = !!form.value.isActive;
+    const title = form.value.title.trim();
+    const description = form.value.description?.trim() || "";
+    const text = form.value.text?.trim() || "";
+    const isActive = Boolean(form.value.isActive);
 
     if (editMode.value) {
-      // Update: Service entscheidet JSON vs. FormData anhand imageFile (File/null)
+      // Update
       const id = form.value.id || selectedExhibition.value.id;
       await store.updateExhibition(
         id,
         title,
         description,
-        imageFile.value,   // File oder null
+        imageFile.value, // File oder null
         text,
         isActive
       );
       showToast("Ausstellung erfolgreich aktualisiert!", "success");
     } else {
-      // Create: immer FormData
+      // Create - FormData
       const fd = new FormData();
       fd.append("title", title);
       fd.append("description", description);
       fd.append("text", text);
-      fd.append("isActive", isActive ? 1 : 0);
-      if (imageFile.value) {
+      fd.append("isActive", isActive ? "1" : "0");
+
+      // ✅ Bild nur anhängen wenn vorhanden, sonst leeren String
+      if (imageFile.value instanceof File) {
         fd.append("image", imageFile.value);
+      } else {
+        fd.append("image", ""); // Leerer String statt gar nichts
       }
 
       await store.createExhibition(fd);
@@ -667,15 +823,18 @@ async function saveExhibition() {
 
     closeModal();
     await store.fetchExhibitions(keyword.value, sort.value);
+
   } catch (error) {
     console.error("Fehler beim Speichern:", error);
+
+    // Besseres Error-Handling
     if (error?.response?.data?.errors) {
       const errors = Object.values(error.response.data.errors).flat();
       showToast(errors[0] || "Validierungsfehler", "error");
     } else if (error?.response?.data?.message) {
       showToast(error.response.data.message, "error");
     } else {
-      showToast("Fehler beim Speichern", "error");
+      showToast("Fehler beim Speichern der Ausstellung", "error");
     }
   } finally {
     isSubmitting.value = false;
@@ -683,8 +842,10 @@ async function saveExhibition() {
 }
 
 async function deleteExhibition() {
-  if (isDeleting.value) return;
+  if (isDeleting.value || !exhibitionToDelete.value) return;
+
   isDeleting.value = true;
+
   try {
     await store.deleteExhibition(exhibitionToDelete.value);
     showToast("Ausstellung erfolgreich gelöscht!", "success");
@@ -693,7 +854,10 @@ async function deleteExhibition() {
     await store.fetchExhibitions(keyword.value, sort.value);
   } catch (error) {
     console.error("Fehler beim Löschen:", error);
-    showToast("Fehler beim Löschen", "error");
+    showToast(
+      error?.response?.data?.message || "Fehler beim Löschen der Ausstellung",
+      "error"
+    );
   } finally {
     isDeleting.value = false;
   }
@@ -702,8 +866,14 @@ async function deleteExhibition() {
 
 <style scoped>
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .line-clamp-2 {
@@ -714,22 +884,56 @@ async function deleteExhibition() {
 }
 
 /* Modal Transitions */
-.modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
-.modal-enter-active > div, .modal-leave-active > div { transition: transform 0.3s ease; }
-.modal-enter-from, .modal-leave-to { opacity: 0; }
-.modal-enter-from > div { transform: scale(0.95) translateY(20px); }
-.modal-leave-to > div { transform: scale(0.95) translateY(20px); }
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-active > div,
+.modal-leave-active > div {
+  transition: transform 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from > div {
+  transform: scale(0.95) translateY(20px);
+}
+
+.modal-leave-to > div {
+  transform: scale(0.95) translateY(20px);
+}
 
 /* Mobile Modal - slide up */
 @media (max-width: 768px) {
-  .modal-enter-from > div { transform: translateY(100%); }
-  .modal-leave-to > div { transform: translateY(100%); }
+  .modal-enter-from > div {
+    transform: translateY(100%);
+  }
+  .modal-leave-to > div {
+    transform: translateY(100%);
+  }
 }
 
 /* Toast Transitions */
-.toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
-.toast-enter-from { transform: translateX(100%); opacity: 0; }
-.toast-leave-to { opacity: 0; transform: translateX(50px); }
-.toast-move { transition: transform 0.3s ease; }
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(50px);
+}
+
+.toast-move {
+  transition: transform 0.3s ease;
+}
 </style>
-section

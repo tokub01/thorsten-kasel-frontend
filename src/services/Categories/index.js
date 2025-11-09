@@ -1,10 +1,9 @@
 import API from "../API";
+
 export async function index() {
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-
         const response = await API.get(`${process.env.VUE_APP_API_URL}/api/categories`);
-
         return response.data.data;
     } catch (error) {
         console.error("Laden der Kategorien fehlgeschlagen.", error);
@@ -12,53 +11,82 @@ export async function index() {
     }
 }
 
-export async function show(category_id){
-    try{
+export async function show(category_id) {
+    try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
         const response = await API.get(`${process.env.VUE_APP_API_URL}/api/categories/${category_id}`);
         return response.data;
-    }catch(error){
+    } catch (error) {
         console.error("Laden der Kategorie fehlgeschlagen", error);
         throw error;
     }
 }
 
-export async function store(category_name){
-    try{
+export async function store(category_name, product_id = null) {
+    try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/categories`, {
-            name: category_name,
-        }, );
+
+        const payload = {
+            name: category_name
+        };
+
+        if (product_id !== null && product_id !== undefined) {
+            payload.product_id = product_id;
+        }
+
+        console.log('📤 Store payload:', payload);
+
+        const response = await API.post(
+            `${process.env.VUE_APP_API_URL}/api/categories`,
+            payload
+        );
         return response.data;
-    }catch(error){
+    } catch (error) {
         console.error("Speichern der Kategorie fehlgeschlagen", error);
+        console.error("Response data:", error.response?.data);
         throw error;
     }
 }
 
-export async function update(product_id, category_id, category_name){
-    try{
+export async function update(category_id, category_name, product_id = null) {
+    try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/categories/${category_id}`, {
+
+        const payload = {
             _method: "PUT",
-            product_id: product_id,
-            name: category_name,
+            name: category_name
+        };
+
+        if (product_id !== null && product_id !== undefined) {
+            payload.product_id = product_id;
+        }
+
+        console.log('📤 Update payload:', {
+            category_id,
+            payload
         });
-        return response.data.data;
-    }catch(error){
+
+        const response = await API.post(
+            `${process.env.VUE_APP_API_URL}/api/categories/${category_id}`,
+            payload
+        );
+
+        console.log('✅ Update response:', response.data);
+
+        return response.data;
+    } catch (error) {
         console.error("Aktualisieren der Kategorie fehlgeschlagen", error);
+        console.error("Response data:", error.response?.data);
         throw error;
     }
 }
 
-export async function destroy(category_id){
-    try{
+export async function destroy(category_id) {
+    try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
-        const response = await API.post(`${process.env.VUE_APP_API_URL}/api/categories/${category_id}`, {
-            _method: "DELETE",
-        });
+        const response = await API.delete(`${process.env.VUE_APP_API_URL}/api/categories/${category_id}`);
         return response.data;
-    }catch(error){
+    } catch (error) {
         console.error("Löschen der Kategorie fehlgeschlagen", error);
         throw error;
     }

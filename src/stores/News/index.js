@@ -1,102 +1,160 @@
-import { defineStore } from 'pinia'
-import * as NewsService from '@/services/News'
+import { defineStore } from 'pinia';
+import * as NewsService from '@/services/News';
 
 export const useNewsStore = defineStore('news', {
   state: () => ({
-    news: [],         // Alle News
-    loading: false,   // Ladezustand
-    error: null,      // Fehlerstatus
+    news: [],
+    currentNews: null,
+    loading: false,
+    error: null,
   }),
 
   getters: {
-    // Nur aktive News
-    activeNews: (state) => (state.news || []).filter((n) => n.isActive),
+    activeNews: (state) => {
+      return (state.news || []).filter(n =>
+        n.isActive === 1 ||
+        n.isActive === "1" ||
+        n.isActive === true
+      );
+    },
 
-    // News nach ID
-    getById: (state) => (id) => state.news.find((n) => n.id === id),
+    getById: (state) => {
+      return (id) => state.news.find(n => n.id === id);
+    },
+
+    totalCount: (state) => state.news.length,
   },
 
   actions: {
-    // Alle News laden
-    async fetchNews(keyword = '', sort = '') {
-      this.loading = true
-      this.error = null
+    async fetchNews(keyword = '', sort = 'desc') {
+      this.loading = true;
+      this.error = null;
+
       try {
-        const data = await NewsService.index(keyword, sort)
-        this.news = data?.data || [] // sicherstellen, dass ein Array vorhanden ist
+        const data = await NewsService.index(keyword, sort);
+        this.news = Array.isArray(data) ? data : (data?.data || []);
       } catch (err) {
-        this.error = err
+        console.error('Error fetching news:', err);
+        this.error = err;
+        this.news = [];
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    // Einzelne News laden (optional)
     async fetchNewsById(id) {
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
+
       try {
-        const data = await NewsService.show(id)
-        return data
+        const data = await NewsService.show(id);
+        this.currentNews = data;
+        return data;
       } catch (err) {
-        this.error = err
-        return null
+        console.error('Error fetching news by ID:', err);
+        this.error = err;
+        this.currentNews = null;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    // Neue News erstellen
     async createNews(formData) {
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
+
       try {
-        const data = await NewsService.store(formData)
-        this.news.push(data)
-        return data
+        const data = await NewsService.store(formData);
+
+        if (data && Array.isArray(this.news)) {
+          this.news.unshift(data);
+        }
+
+        return data;
       } catch (err) {
-        this.error = err
-        return null
+        console.error('Error creating news:', err);
+        this.error = err;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    // News aktualisieren
     async updateNews(id, title, description, image, text, isActive) {
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
+
       try {
-        const data = await NewsService.update(id, title, description, image, text, isActive)
-        const index = this.news.findIndex((n) => n.id === id)
-        if (index !== -1) this.news[index] = data
-        return data
+        const data = await NewsService.update(id, title, description, image, text, isActive);
+
+        // In Liste aktualisieren
+        if (Array.isArray(this.news)) {
+          const index = this.news.findIndex(n => n.id === id);
+          if (index !== -1) {
+            this.news.splice(index, 1, data);
+          }
+        }
+
+        // Current news aktualisieren
+        if (this.currentNews?.id === id) {
+          this.currentNews = data;
+        }
+
+        return data;
       } catch (err) {
-        this.error = err
-        return null
+        console.error('Error updating news:', err);
+        this.error = err;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    // News löschen
     async deleteNews(id) {
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
+
       try {
-        await NewsService.destroy(id)
-        this.news = this.news.filter((n) => n.id !== id)
+        await NewsService.destroy(id);
+
+        if (Array.isArray(this.news)) {
+          this.news = this.news.filter(n => n.id !== id);
+        }
+
+        if (this.currentNews?.id === id) {
+          this.currentNews = null;
+        }
+
+        return true;
       } catch (err) {
-        this.error = err
+        console.error('Error deleting news:', err);
+        this.error = err;
+        throw err;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    // Aktiv/Deaktiv schalten
-    toggleActive(id) {
-      const item = this.news.find((n) => n.id === id)
-      if (item) item.isActive = !item.isActive
+    async toggleActive(id) {
+      const item = this.news.find(n => n.id === id);
+      if (!item) return;
+
+      const newActiveState = !(item.isActive === 1 || item.isActive === "1" || item.isActive === true);
+
+      try {
+        await this.updateNews(
+          id,
+          item.title,
+          item.description,
+          null, // kein neues Bild
+          item.text,
+          newActiveState
+        );
+      } catch (err) {
+        console.error('Error toggling active state:', err);
+        throw err;
+      }
     },
   },
-})
+});

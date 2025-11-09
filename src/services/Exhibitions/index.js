@@ -1,4 +1,3 @@
-// @/services/Exhibitions/index.js
 import API from "../API";
 
 export async function index(keyword, sort) {
@@ -48,41 +47,30 @@ export async function update(exhibition_id, exhibition_title, exhibition_descrip
     try {
         await API.get(`${process.env.VUE_APP_API_URL}/sanctum/csrf-cookie`);
 
-        // Wenn Bild vorhanden ist (File-Objekt), verwende FormData
-        if (exhibition_image instanceof File) {
-            const formData = new FormData();
-            formData.append('_method', 'PUT');
-            formData.append('title', exhibition_title ?? '');
-            formData.append('description', exhibition_description ?? '');
-            formData.append('text', exhibition_text ?? '');
-            formData.append('isActive', exhibition_isActive); // ✅ String
-            formData.append('image', exhibition_image);
+        // IMMER FormData verwenden für Laravel-Kompatibilität
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        formData.append('title', exhibition_title || '');
+        formData.append('description', exhibition_description || '');
+        formData.append('text', exhibition_text || '');
+        formData.append('isActive', exhibition_isActive ? '1' : '0');
 
-            const response = await API.post(
-                `${process.env.VUE_APP_API_URL}/api/exhibitions/${exhibition_id}`,
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                }
-            );
-            return response.data;
-        } else {
-            // Ohne Bild: normales JSON
-            const response = await API.post(
-                `${process.env.VUE_APP_API_URL}/api/exhibitions/${exhibition_id}`,
-                {
-                    _method: "PUT",
-                    title: exhibition_title ?? null,
-                    description: exhibition_description ?? null,
-                    text: exhibition_text ?? null,
-                    image: null,
-                    isActive: exhibition_isActive ? 1 : 0, // ✅ Number für JSON
-                }
-            );
-            return response.data;
+        // Nur wenn neues Bild vorhanden
+        if (exhibition_image instanceof File) {
+            formData.append('image', exhibition_image);
         }
+
+        const response = await API.post(
+            `${process.env.VUE_APP_API_URL}/api/exhibitions/${exhibition_id}`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            }
+        );
+
+        return response.data;
     } catch (error) {
         console.error("Aktualisieren der Ausstellung fehlgeschlagen.", error);
         throw error;

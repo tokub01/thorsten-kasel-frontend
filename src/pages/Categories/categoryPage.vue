@@ -82,7 +82,7 @@
                   Kategorie
                 </th>
                 <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Produkt
+                  Verknüpftes Produkt
                 </th>
                 <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
                   Aktionen
@@ -98,18 +98,12 @@
               >
                 <!-- Bild -->
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="h-16 w-16 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-200 shadow-sm">
-                    <img
-                      v-if="getCategoryImage(category)"
-                      :src="getCategoryImage(category)"
-                      :alt="category.name"
-                      class="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                    <div v-else class="h-full w-full flex items-center justify-center">
-                      <ImageIcon class="w-6 h-6 text-gray-400" />
-                    </div>
-                  </div>
+                  <SafeImage
+                    :src="getCategoryImage(category)"
+                    :alt="category.name"
+                    icon-class="w-6 h-6 text-gray-400"
+                    class="h-16 w-16 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm"
+                  />
                 </td>
 
                 <!-- Kategorie Name -->
@@ -124,11 +118,20 @@
 
                 <!-- Produkt Info -->
                 <td class="px-6 py-4">
-                  <div v-if="category.product?.name || category.product_id" class="flex items-center gap-2">
-                    <Package class="w-4 h-4 text-gray-500" />
-                    <span class="text-sm text-gray-700 font-medium">
-                      {{ category.product?.name || `#${category.product_id}` }}
-                    </span>
+                  <div v-if="getProductInfo(category)" class="flex items-center gap-3">
+                    <SafeImage
+                      :src="getProductInfo(category).image"
+                      :alt="getProductInfo(category).title"
+                      :fallback-icon="Package"
+                      icon-class="w-4 h-4 text-gray-400"
+                      class="h-10 w-10 rounded-lg overflow-hidden border border-gray-200"
+                    />
+                    <div class="min-w-0">
+                      <p class="text-sm font-bold text-gray-900 truncate">
+                        {{ getProductInfo(category).title }}
+                      </p>
+                      <p class="text-xs text-gray-500">ID: {{ getProductInfo(category).id }}</p>
+                    </div>
                   </div>
                   <span v-else class="text-sm text-gray-400 italic">Nicht verknüpft</span>
                 </td>
@@ -187,18 +190,12 @@
           >
             <div class="flex items-start gap-3 mb-4">
               <!-- Bild -->
-              <div class="h-20 w-20 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-200 shadow-sm flex-shrink-0">
-                <img
-                  v-if="getCategoryImage(category)"
-                  :src="getCategoryImage(category)"
-                  :alt="category.name"
-                  class="h-full w-full object-cover"
-                  loading="lazy"
-                />
-                <div v-else class="h-full w-full flex items-center justify-center">
-                  <ImageIcon class="w-8 h-8 text-gray-400" />
-                </div>
-              </div>
+              <SafeImage
+                :src="getCategoryImage(category)"
+                :alt="category.name"
+                icon-class="w-8 h-8 text-gray-400"
+                class="h-20 w-20 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm flex-shrink-0"
+              />
 
               <!-- Info -->
               <div class="flex-1 min-w-0">
@@ -208,13 +205,24 @@
                   </div>
                   <h3 class="font-bold text-gray-900 truncate text-lg">{{ category.name }}</h3>
                 </div>
-                <div v-if="category.product?.name || category.product_id" class="flex items-center gap-2">
-                  <Package class="w-3.5 h-3.5 text-gray-500" />
-                  <p class="text-xs text-gray-600 truncate">
-                    {{ category.product?.name || `Produkt #${category.product_id}` }}
-                  </p>
+
+                <!-- Product Info -->
+                <div v-if="getProductInfo(category)" class="flex items-center gap-2 mt-2">
+                  <SafeImage
+                    :src="getProductInfo(category).image"
+                    :alt="getProductInfo(category).title"
+                    :fallback-icon="Package"
+                    icon-class="w-3 h-3 text-gray-400"
+                    class="h-8 w-8 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0"
+                  />
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold text-gray-900 truncate">
+                      {{ getProductInfo(category).title }}
+                    </p>
+                    <p class="text-xs text-gray-500">ID: {{ getProductInfo(category).id }}</p>
+                  </div>
                 </div>
-                <p v-else class="text-xs text-gray-400 italic ml-5">Kein Produkt</p>
+                <p v-else class="text-xs text-gray-400 italic mt-2">Kein Produkt verknüpft</p>
               </div>
             </div>
 
@@ -299,9 +307,14 @@
                       v-model="form.name"
                       type="text"
                       placeholder="z.B. Landschaften, Porträts..."
+                      maxlength="255"
                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                       required
+                      @input="onNameInput"
                     />
+                    <p class="text-xs text-gray-500 mt-1">
+                      Aktueller Wert: "{{ form.name }}" (Länge: {{ form.name.length }})
+                    </p>
                   </div>
 
                   <!-- Selected Product Preview -->
@@ -311,19 +324,18 @@
                       Ausgewähltes Produkt
                     </label>
                     <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl">
-                      <div class="h-14 w-14 rounded-xl overflow-hidden bg-white flex-shrink-0 shadow-sm">
-                        <img
-                          v-if="form.selectedProduct.image"
-                          :src="form.selectedProduct.image"
-                          :alt="form.selectedProduct.name"
-                          class="h-full w-full object-cover"
-                        />
-                      </div>
+                      <SafeImage
+                        :src="form.selectedProduct.image"
+                        :alt="form.selectedProduct.title"
+                        :fallback-icon="Package"
+                        icon-class="w-6 h-6 text-gray-400"
+                        class="h-14 w-14 rounded-xl overflow-hidden border border-gray-200 shadow-sm flex-shrink-0"
+                      />
                       <div class="flex-1 min-w-0">
                         <p class="font-bold text-gray-900 truncate">
-                          {{ form.selectedProduct.name || `Produkt #${getProductId(form.selectedProduct)}` }}
+                          {{ form.selectedProduct.title || `Produkt #${form.selectedProduct.id}` }}
                         </p>
-                        <p class="text-xs text-gray-600">ID: {{ getProductId(form.selectedProduct) }}</p>
+                        <p class="text-xs text-gray-600">ID: {{ form.selectedProduct.id }}</p>
                       </div>
                       <button
                         type="button"
@@ -348,9 +360,10 @@
                       <button
                         type="button"
                         @click="loadProducts"
-                        class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1"
+                        :disabled="productsLoading"
+                        class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1 disabled:opacity-50"
                       >
-                        <RefreshCw class="w-3.5 h-3.5" />
+                        <RefreshCw :class="['w-3.5 h-3.5', { 'animate-spin': productsLoading }]" />
                         Neu laden
                       </button>
                     </div>
@@ -408,7 +421,7 @@
                   <div v-else-if="displayedProducts.length > 0" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
                     <button
                       v-for="product in displayedProducts"
-                      :key="getProductId(product)"
+                      :key="product.id"
                       type="button"
                       @click="toggleProductSelection(product)"
                       class="w-full flex items-center gap-4 p-3 border-2 rounded-xl transition-all"
@@ -417,20 +430,18 @@
                         'border-gray-200 hover:border-gray-300 hover:bg-gray-50': !isProductSelected(product)
                       }"
                     >
-                      <div class="h-14 w-20 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
-                        <img
-                          v-if="product.image"
-                          :src="product.image"
-                          :alt="product.name"
-                          class="h-full w-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
+                      <SafeImage
+                        :src="product.image"
+                        :alt="product.title"
+                        :fallback-icon="Package"
+                        icon-class="w-6 h-6 text-gray-400"
+                        class="h-14 w-20 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0"
+                      />
                       <div class="flex-1 min-w-0 text-left">
                         <p class="font-bold text-gray-900 truncate">
-                          {{ product.name || `Produkt #${getProductId(product)}` }}
+                          {{ product.title || `Produkt #${product.id}` }}
                         </p>
-                        <p class="text-xs text-gray-500">ID: {{ getProductId(product) }}</p>
+                        <p class="text-xs text-gray-500">ID: {{ product.id }}</p>
                       </div>
                       <div class="flex-shrink-0">
                         <span
@@ -457,7 +468,7 @@
                       {{ hasSearchQuery ? 'Keine Produkte gefunden' : 'Keine Produkte vorhanden' }}
                     </p>
                     <p class="text-gray-400 text-sm mt-2">
-                      Bitte überprüfe deine Produktdatenbank
+                      {{ hasSearchQuery ? 'Versuche einen anderen Suchbegriff' : 'Bitte erstelle zuerst Produkte' }}
                     </p>
                   </div>
                 </div>
@@ -468,7 +479,8 @@
                 <button
                   type="button"
                   @click="closeModal"
-                  class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-semibold"
+                  :disabled="isSubmitting"
+                  class="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Abbrechen
                 </button>
@@ -517,250 +529,499 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useCategoryStore } from '@/stores/Categories'
-import { useProductStore } from '@/stores/Products'
+import { ref, computed, onMounted } from 'vue';
+import { useCategoryStore } from '@/stores/Categories';
+import { useProductStore } from '@/stores/Products';
 import {
   Plus, Edit2, Trash2, X, Save, Tag, Loader2, AlertCircle, XCircle,
   CheckCircle2, Search, Package, ImageIcon, RefreshCw
-} from 'lucide-vue-next'
+} from 'lucide-vue-next';
 
-/* STORES */
-const categoryStore = useCategoryStore()
-const productStore = useProductStore()
+// ===== SafeImage Component =====
+import { defineComponent, h } from 'vue';
 
-/* CATEGORIES */
+const SafeImage = defineComponent({
+  name: 'SafeImage',
+  props: {
+    src: {
+      type: String,
+      default: null
+    },
+    alt: {
+      type: String,
+      default: ''
+    },
+    fallbackIcon: {
+      type: [Object, Function],
+      default: () => ImageIcon
+    },
+    iconClass: {
+      type: String,
+      default: 'w-6 h-6 text-gray-400'
+    }
+  },
+  setup(props, { attrs }) {
+    const hasError = ref(false);
+
+    const getImageUrl = (image) => {
+      if (!image) return null;
+
+      if (image.startsWith('http://') || image.startsWith('https://')) {
+        return image;
+      }
+
+      if (image.startsWith('blob:')) {
+        return image;
+      }
+
+      return `${process.env.VUE_APP_API_URL}/storage/${image}`;
+    };
+
+    const imageUrl = computed(() => getImageUrl(props.src));
+
+    const handleError = () => {
+      hasError.value = true;
+    };
+
+    const handleLoad = () => {
+      hasError.value = false;
+    };
+
+    return () => {
+      const containerClass = attrs.class || '';
+
+      return h('div', {
+        class: `${containerClass} bg-gradient-to-br from-gray-100 to-gray-200 relative`
+      }, [
+        !hasError.value && imageUrl.value
+          ? h('img', {
+              src: imageUrl.value,
+              alt: props.alt,
+              class: 'w-full h-full object-cover',
+              loading: 'lazy',
+              onError: handleError,
+              onLoad: handleLoad
+            })
+          : h('div', {
+              class: 'w-full h-full flex items-center justify-center'
+            }, [
+              h(props.fallbackIcon, {
+                class: props.iconClass
+              })
+            ])
+      ]);
+    };
+  }
+});
+
+// ===== STORES =====
+const categoryStore = useCategoryStore();
+const productStore = useProductStore();
+
+// ===== CATEGORIES =====
 const categories = computed(() => {
-  const cats = categoryStore.categories
-  return Array.isArray(cats) ? cats : []
-})
-const isLoading = computed(() => categoryStore.loading)
-const error = computed(() => {
-  const errors = categoryStore.errors
-  return Array.isArray(errors) && errors.length ? errors[0] : null
-})
+  const cats = categoryStore.categories;
+  return Array.isArray(cats) ? cats : [];
+});
 
-/* STATS */
+const isLoading = computed(() => categoryStore.loading);
+
+const error = computed(() => {
+  const errors = categoryStore.errors;
+  return Array.isArray(errors) && errors.length ? errors[0] : null;
+});
+
+// ===== STATS =====
 const categoriesWithImages = computed(() =>
   categories.value.filter(c => getCategoryImage(c)).length
-)
+);
+
 const categoriesWithProducts = computed(() =>
-  categories.value.filter(c => c.product_id || c.product).length
-)
+  categories.value.filter(c => getProductInfo(c) !== null).length
+);
 
-/* PRODUCTS */
-const productsLoading = ref(false)
-const productsError = ref(null)
-const allProducts = ref([])
+// ===== PRODUCTS =====
+const productsLoading = ref(false);
+const productsError = ref(null);
+const allProducts = ref([]);
 
-/* MODAL STATE */
-const showModal = ref(false)
-const editMode = ref(false)
-const isSubmitting = ref(false)
-const searchQuery = ref('')
+// ===== MODAL STATE =====
+const showModal = ref(false);
+const editMode = ref(false);
+const isSubmitting = ref(false);
+const searchQuery = ref('');
 
 const form = ref({
   name: '',
   selectedProduct: null,
   categoryToEdit: null
-})
+});
 
-/* SEARCH */
-const hasSearchQuery = computed(() => searchQuery.value.trim().length > 0)
+// ===== SEARCH =====
+const hasSearchQuery = computed(() => searchQuery.value.trim().length > 0);
 
 const displayedProducts = computed(() => {
-  if (!hasSearchQuery.value) return allProducts.value
+  if (!hasSearchQuery.value) return allProducts.value;
 
-  const q = searchQuery.value.trim().toLowerCase()
+  const q = searchQuery.value.trim().toLowerCase();
   return allProducts.value.filter(p => {
-    const name = (p?.name || '').toLowerCase()
-    const idStr = String(getProductId(p) ?? '').toLowerCase()
-    return name.includes(q) || idStr.includes(q)
-  })
-})
+    const title = (p?.title || '').toLowerCase();
+    const idStr = String(p?.id || '').toLowerCase();
+    return title.includes(q) || idStr.includes(q);
+  });
+});
 
-/* TOASTS */
-let toastCounter = 0
-const toasts = ref([])
+// ===== TOASTS =====
+let toastCounter = 0;
+const toasts = ref([]);
+
 function showToast(message, type = 'success') {
-  const id = ++toastCounter
-  toasts.value.push({ id, message, type })
+  const id = ++toastCounter;
+  toasts.value.push({ id, message, type });
   setTimeout(() => {
-    toasts.value = toasts.value.filter(t => t.id !== id)
-  }, 4000)
+    toasts.value = toasts.value.filter(t => t.id !== id);
+  }, 4000);
 }
+
 function removeToast(id) {
-  toasts.value = toasts.value.filter(t => t.id !== id)
+  toasts.value = toasts.value.filter(t => t.id !== id);
 }
 
-/* DELETE STATE */
-const deletingIds = ref(new Set())
+// ===== DELETE STATE =====
+const deletingIds = ref(new Set());
 
-/* HELPERS */
-function getProductId(product) {
-  return product?.id ?? product?.product_id ?? null
+// ===== HELPERS =====
+function onNameInput() {
+  console.log('Name input changed:', form.value.name);
+}
+
+function getProductInfo(category) {
+  // Wenn product Object vorhanden (von Relationship)
+  if (category.product && typeof category.product === 'object') {
+    return {
+      id: category.product.id,
+      title: category.product.title,
+      image: category.product.image
+    };
+  }
+
+  // Wenn nur product_id vorhanden, suche in allProducts
+  if (category.product_id) {
+    const product = allProducts.value.find(p => p.id === category.product_id);
+    if (product) {
+      return {
+        id: product.id,
+        title: product.title,
+        image: product.image
+      };
+    }
+    // Fallback wenn Produkt nicht in Liste
+    return {
+      id: category.product_id,
+      title: `Produkt #${category.product_id}`,
+      image: null
+    };
+  }
+
+  return null;
 }
 
 function getCategoryImage(category) {
-  return category.image || category.product?.image || null
+  const productInfo = getProductInfo(category);
+  return productInfo?.image || category.image || null;
 }
 
 function isProductSelected(product) {
   return form.value.selectedProduct &&
-         getProductId(form.value.selectedProduct) === getProductId(product)
+         form.value.selectedProduct.id === product.id;
 }
 
 function toggleProductSelection(product) {
   if (isProductSelected(product)) {
-    form.value.selectedProduct = null
+    form.value.selectedProduct = null;
   } else {
-    form.value.selectedProduct = product
+    form.value.selectedProduct = product;
   }
 }
 
-/* PRODUCTS LADEN */
+// ===== PRODUCTS LADEN =====
 async function loadProducts() {
-  productsLoading.value = true
-  productsError.value = null
+  productsLoading.value = true;
+  productsError.value = null;
 
   try {
-    await productStore.loadAllProducts("", "", "")
+    await productStore.loadAllProducts("", "", "");
 
-    const rawProducts = productStore.products
+    const rawProducts = productStore.products;
 
     if (!rawProducts) {
-      allProducts.value = []
-      return
+      allProducts.value = [];
+      return;
     }
 
-    let extractedProducts = []
+    let extractedProducts = [];
 
     if (Array.isArray(rawProducts)) {
-      extractedProducts = rawProducts
+      extractedProducts = rawProducts;
     } else if (Array.isArray(rawProducts.data)) {
-      extractedProducts = rawProducts.data
+      extractedProducts = rawProducts.data;
     } else if (rawProducts.data && Array.isArray(rawProducts.data.data)) {
-      extractedProducts = rawProducts.data.data
-    } else if (typeof rawProducts === 'object') {
-      const possibleKeys = ['products', 'items', 'results', 'product']
-      for (const key of possibleKeys) {
-        if (Array.isArray(rawProducts[key])) {
-          extractedProducts = rawProducts[key]
-          break
-        }
-      }
+      extractedProducts = rawProducts.data.data;
     }
 
-    allProducts.value = extractedProducts
+    allProducts.value = extractedProducts;
 
   } catch (error) {
-    console.error('Fehler beim Laden der Produkte:', error)
-    productsError.value = 'Fehler beim Laden der Produkte'
-    showToast('Fehler beim Laden der Produkte', 'error')
+    console.error('Fehler beim Laden der Produkte:', error);
+    productsError.value = 'Fehler beim Laden der Produkte';
+    showToast('Fehler beim Laden der Produkte', 'error');
   } finally {
-    productsLoading.value = false
+    productsLoading.value = false;
   }
 }
 
-/* MODAL FUNCS */
+// ===== MODAL FUNCS =====
 function openCreateModal() {
-  editMode.value = false
-  form.value = { name: '', selectedProduct: null, categoryToEdit: null }
-  searchQuery.value = ''
-  showModal.value = true
+  editMode.value = false;
+  form.value = { name: '', selectedProduct: null, categoryToEdit: null };
+  searchQuery.value = '';
+  showModal.value = true;
+
+  console.log('🆕 Create Modal opened');
 
   if (allProducts.value.length === 0) {
-    loadProducts()
+    loadProducts();
   }
 }
 
 function openEditModal(category) {
-  editMode.value = true
+  editMode.value = true;
 
-  let selectedProduct = null
-  if (category.product_id) {
-    selectedProduct = allProducts.value.find(p =>
-      getProductId(p) === category.product_id
-    ) || category.product || null
+  console.log('✏️ Edit Modal opened for category:', category);
+  console.log('📊 Category structure:', JSON.stringify(category, null, 2));
+
+  // Finde die tatsächliche numerische ID
+  // Manchmal ist category.id der Name, und die echte ID ist woanders
+  let numericId = null;
+
+  // Versuche verschiedene Felder für die ID
+  if (typeof category.id === 'number') {
+    numericId = category.id;
+  } else if (typeof category.category_id === 'number') {
+    numericId = category.category_id;
+  } else if (typeof category.pk === 'number') {
+    numericId = category.pk;
+  } else {
+    // Suche in categories array nach einem Match mit dem Namen
+    const foundCategory = categories.value.find(c => c.name === category.name);
+    if (foundCategory) {
+      // Durchsuche alle Felder nach einer numerischen ID
+      for (const key in foundCategory) {
+        if (typeof foundCategory[key] === 'number' && key.toLowerCase().includes('id')) {
+          numericId = foundCategory[key];
+          break;
+        }
+      }
+    }
   }
+
+  console.log('🔑 Found numeric ID:', numericId, 'from category:', category);
+
+  // Product Info aus Category extrahieren
+  const productInfo = getProductInfo(category);
+  let selectedProduct = null;
+
+  if (productInfo) {
+    // Versuche das vollständige Product Object zu finden
+    selectedProduct = allProducts.value.find(p => p.id === productInfo.id) || {
+      id: productInfo.id,
+      title: productInfo.title,
+      image: productInfo.image
+    };
+  }
+
+  // Erstelle ein sauberes category object mit der richtigen ID
+  const categoryToEdit = {
+    ...category,
+    numericId: numericId, // Speichere die numerische ID separat
+    originalId: category.id // Behalte die Original-ID
+  };
 
   form.value = {
     name: category.name,
     selectedProduct,
-    categoryToEdit: category
-  }
-  searchQuery.value = ''
-  showModal.value = true
+    categoryToEdit: categoryToEdit
+  };
+
+  console.log('📝 Form initialized with:', {
+    name: form.value.name,
+    selectedProduct: form.value.selectedProduct,
+    categoryToEdit: form.value.categoryToEdit
+  });
+
+  searchQuery.value = '';
+  showModal.value = true;
 
   if (allProducts.value.length === 0) {
-    loadProducts()
+    loadProducts();
   }
 }
 
 function closeModal() {
-  showModal.value = false
+  showModal.value = false;
   setTimeout(() => {
-    form.value = { name: '', selectedProduct: null, categoryToEdit: null }
-    searchQuery.value = ''
-  }, 300)
+    form.value = { name: '', selectedProduct: null, categoryToEdit: null };
+    searchQuery.value = '';
+    isSubmitting.value = false;
+  }, 300);
 }
 
-/* CRUD */
+// ===== CRUD =====
 async function handleSubmit() {
-  if (isSubmitting.value || !form.value.name.trim()) return
+  console.log('🚀 Submit started with form:', {
+    name: form.value.name,
+    nameLength: form.value.name.length,
+    nameTrimmed: form.value.name.trim(),
+    selectedProduct: form.value.selectedProduct,
+    categoryToEdit: form.value.categoryToEdit,
+    editMode: editMode.value
+  });
 
-  isSubmitting.value = true
+  if (isSubmitting.value) {
+    console.warn('❌ Submit blocked: Already submitting');
+    return;
+  }
+
+  if (!form.value.name || !form.value.name.trim()) {
+    console.warn('❌ Submit blocked: Name is empty');
+    showToast('Kategoriename darf nicht leer sein', 'error');
+    return;
+  }
+
+  isSubmitting.value = true;
+
   try {
-    const productId = form.value.selectedProduct ? getProductId(form.value.selectedProduct) : null
+    const categoryName = form.value.name.trim();
+    const productId = form.value.selectedProduct ? form.value.selectedProduct.id : null;
 
-    if (editMode.value && form.value.categoryToEdit?.id) {
-      await categoryStore.updateCategory(productId, form.value.categoryToEdit.id, form.value.name)
-      showToast('Kategorie erfolgreich aktualisiert', 'success')
+    if (editMode.value && form.value.categoryToEdit) {
+      // Verwende numericId wenn vorhanden, sonst versuche id zu konvertieren
+      let categoryId = form.value.categoryToEdit.numericId || form.value.categoryToEdit.id;
+
+      // Wenn id ein String ist, versuche nach numerischer ID zu suchen
+      if (typeof categoryId === 'string') {
+        console.warn('⚠️ Category ID is string:', categoryId);
+
+        // Suche in der categories Liste nach der richtigen numerischen ID
+        const foundCategory = categories.value.find(c => c.name === categoryId || c.name === categoryName);
+        if (foundCategory) {
+          // Durchsuche alle Felder nach einer numerischen ID
+          for (const key in foundCategory) {
+            if (typeof foundCategory[key] === 'number' && (key === 'id' || key.toLowerCase().includes('id'))) {
+              categoryId = foundCategory[key];
+              console.log('✅ Found numeric ID in field:', key, '=', categoryId);
+              break;
+            }
+          }
+        }
+      }
+
+      categoryId = Number(categoryId);
+
+      if (isNaN(categoryId)) {
+        console.error('❌ Invalid category ID after conversion:', form.value.categoryToEdit);
+        showToast('Kategorie-ID konnte nicht ermittelt werden', 'error');
+        return;
+      }
+
+      console.log('✏️ Calling updateCategory with:', {
+        categoryId,
+        categoryName,
+        productId
+      });
+
+      // KORRIGIERTE PARAMETER-REIHENFOLGE: categoryId, categoryName, productId
+      await categoryStore.updateCategory(
+        categoryId,
+        categoryName,
+        productId
+      );
+
+      console.log('✅ Update successful');
+      showToast('Kategorie erfolgreich aktualisiert', 'success');
     } else {
-      await categoryStore.storeCategory(form.value.name, productId)
-      showToast('Kategorie erfolgreich erstellt', 'success')
+      console.log('🆕 Calling storeCategory with:', {
+        categoryName,
+        productId
+      });
+
+      // KORRIGIERTE PARAMETER-REIHENFOLGE: categoryName, productId
+      await categoryStore.storeCategory(
+        categoryName,
+        productId
+      );
+
+      console.log('✅ Create successful');
+      showToast('Kategorie erfolgreich erstellt', 'success');
     }
 
-    await categoryStore.loadAllCategories()
-    closeModal()
+    await categoryStore.loadAllCategories();
+    closeModal();
   } catch (error) {
-    console.error('Fehler beim Speichern:', error)
-    showToast(editMode.value ? 'Fehler beim Aktualisieren' : 'Fehler beim Erstellen', 'error')
+    console.error('❌ Error in handleSubmit:', error);
+    console.error('Error response:', error?.response?.data);
+
+    const errorMsg = error?.response?.data?.errors
+      ? Object.values(error.response.data.errors).flat()[0]
+      : error?.response?.data?.message
+        || (editMode.value ? 'Fehler beim Aktualisieren' : 'Fehler beim Erstellen');
+
+    showToast(errorMsg, 'error');
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
 }
 
 async function handleDelete(category) {
-  if (deletingIds.value.has(category.id)) return
-  if (!confirm(`Möchten Sie die Kategorie "${category.name}" wirklich löschen?`)) return
+  if (deletingIds.value.has(category.id)) return;
+  if (!confirm(`Möchten Sie die Kategorie "${category.name}" wirklich löschen?`)) return;
 
-  deletingIds.value.add(category.id)
+  deletingIds.value.add(category.id);
+
   try {
-    await categoryStore.removeCategory(category.id)
-    await categoryStore.loadAllCategories()
-    showToast('Kategorie erfolgreich gelöscht', 'success')
+    await categoryStore.removeCategory(category.id);
+    await categoryStore.loadAllCategories();
+    showToast('Kategorie erfolgreich gelöscht', 'success');
   } catch (error) {
-    console.error('Fehler beim Löschen:', error)
-    showToast('Fehler beim Löschen', 'error')
+    console.error('Fehler beim Löschen:', error);
+    showToast(
+      error?.response?.data?.message || 'Fehler beim Löschen',
+      'error'
+    );
   } finally {
-    deletingIds.value.delete(category.id)
+    deletingIds.value.delete(category.id);
   }
 }
 
-/* INIT */
+// ===== INIT =====
 async function loadData() {
   try {
-    await categoryStore.loadAllCategories()
+    await categoryStore.loadAllCategories();
+
+    // Debug: Zeige die erste Kategorie um die Struktur zu sehen
+    if (categories.value.length > 0) {
+      console.log('📊 First category from API:', JSON.stringify(categories.value[0], null, 2));
+      console.log('🔑 First category ID field:', categories.value[0].id, 'Type:', typeof categories.value[0].id);
+    }
   } catch (err) {
-    console.error('Fehler beim Laden der Daten:', err)
-    showToast('Fehler beim Laden der Daten', 'error')
+    console.error('Fehler beim Laden der Daten:', err);
+    showToast('Fehler beim Laden der Daten', 'error');
   }
 }
 
 onMounted(() => {
-  loadData()
-})
+  loadData();
+});
 </script>
 
 <style scoped>
@@ -780,17 +1041,21 @@ onMounted(() => {
 .modal-leave-active {
   transition: opacity 0.3s ease;
 }
+
 .modal-enter-active .bg-white,
 .modal-leave-active .bg-white {
   transition: transform 0.3s ease;
 }
+
 .modal-enter-from,
 .modal-leave-to {
   opacity: 0;
 }
+
 .modal-enter-from .bg-white {
   transform: scale(0.95) translateY(20px);
 }
+
 .modal-leave-to .bg-white {
   transform: scale(0.95) translateY(20px);
 }
@@ -810,14 +1075,17 @@ onMounted(() => {
 .toast-leave-active {
   transition: all 0.3s ease;
 }
+
 .toast-enter-from {
   transform: translateX(100%);
   opacity: 0;
 }
+
 .toast-leave-to {
   transform: translateX(50px);
   opacity: 0;
 }
+
 .toast-move {
   transition: transform 0.3s ease;
 }
