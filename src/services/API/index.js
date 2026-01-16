@@ -3,7 +3,7 @@ import router from '@/router';
 
 const axiosInstance = axios.create({
     baseURL: process.env.VUE_APP_API_URL + "/api",
-    timeout: 1000,
+    timeout: 10000,
     headers: { 'Content-Type': 'multipart/form-data'},
     withCredentials: true,
 });
