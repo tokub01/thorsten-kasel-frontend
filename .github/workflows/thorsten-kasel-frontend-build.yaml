@@ -14,8 +14,9 @@ on:
         type: string
 
 env:
-  DEPLOYMENT_FOLDER: dist
-
+  DEPLOYMENT_FOLDER: dist,
+  NUXT_PUBLIC_EMAILJS_SERVICE_ID: ${{ secrets.NUXT_PUBLIC_EMAILJS_SERVICE_ID }},
+  NUXT_PUBLIC_EMAILJS_TEMPLATE_ID: ${{ secrets.NUXT_PUBLIC_EMAILJS_TEMPLATE_ID }},
 jobs:
 # Please do not rename this job
   build-project:
