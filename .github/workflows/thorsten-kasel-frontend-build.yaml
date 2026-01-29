@@ -15,8 +15,6 @@ on:
 
 env:
   DEPLOYMENT_FOLDER: dist
-  VUE_APP_API_URL: ${{ secrets.VUE_APP_API_URL }}
-  VUE_APP_RECAPTCHA_KEY: ${{ secrets.VUE_APP_RECAPTCHA_KEY }}
 jobs:
 # Please do not rename this job
   build-project:
@@ -37,6 +35,8 @@ jobs:
         env:
           CI: true
           SITE_URL: ${{ inputs.site-url }}
+          VUE_APP_API_URL: ${{ secrets.VUE_APP_API_URL }}
+          VUE_APP_RECAPTCHA_KEY: ${{ secrets.VUE_APP_RECAPTCHA_KEY }}
         run: |
           npm ci
           npm run build
