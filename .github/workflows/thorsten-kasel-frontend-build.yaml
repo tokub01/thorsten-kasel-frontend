@@ -14,7 +14,7 @@ on:
         type: string
 
 env:
-  DEPLOYMENT_FOLDER: dist,
+  DEPLOYMENT_FOLDER: dist
   VUE_APP_API_URL: ${{ secrets.VUE_APP_API_URL }}
   VUE_APP_RECAPTCHA_KEY: ${{ secrets.VUE_APP_RECAPTCHA_KEY }}
 jobs:
