@@ -36,7 +36,7 @@ jobs:
         env:
           CI: true
           SITE_URL: ${{ inputs.site-url }}
-          VUE_APP_API_URL: https://home-5019512038.app-ionos.space
+          VUE_APP_API_URL:  home-5019512038.app-ionos.space
           VUE_APP_RECAPTCHA_KEY: 6Lcpy0wsAAAAAHxURCD3v8uNQpk7ZTovpir9bqx0
         run: |
           npm ci
@@ -48,7 +48,7 @@ jobs:
         with:
           api-key: ${{ secrets.IONOS_API_KEY }}
           service-host: api-eu.ionos.space
-          project-id: f071da88-89a9-44fd-a284-ecd85b7b24d4
+          project-id: 963f2db1-48d3-49f6-85dc-87d7a3033db4
           branch-id: ${{ inputs.branch-id }}
           version: ${{ github.sha }}
           folder: ${{ env.DEPLOYMENT_FOLDER }}
