@@ -36,8 +36,8 @@ jobs:
         env:
           CI: true
           SITE_URL: ${{ inputs.site-url }}
-          VUE_APP_API_URL: https://home-5019512038.app-ionos.space
-          VUE_APP_RECAPTCHA_KEY: 6Lcpy0wsAAAAAHxURCD3v8uNQpk7ZTovpir9bqx0
+          VUE_APP_API_URL: ${{secrets.VUE_APP_API_URL}}
+          VUE_APP_RECAPTCHA_KEY: ${{secrets.VUE_APP_RECAPTCHA_KEY}}
         run: |
           npm ci
           npm run build
