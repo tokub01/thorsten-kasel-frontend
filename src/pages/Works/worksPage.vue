@@ -140,10 +140,12 @@ const currentIndex = ref(0);
 
 // Filterung der Produkte nach der Kategorie-ID aus der URL
 const filteredProducts = computed(() => {
-  const catId = route.params.categoryId;
-  return productStore.products?.data?.filter(p =>
-    p.isActive && String(p.category_id.id) === String(catId)
-  ) || [];
+  const catIdFromRoute = route.params.categoryId;
+  return productStore.products?.data?.filter(p => {
+    if (!p.isActive || !p.category_id) return false;
+    const pCatId = typeof p.category_id === 'object' ? p.category_id.id : p.category_id;
+    return String(pCatId) === String(catIdFromRoute);
+  }) || [];
 });
 
 // Namen der Kategorie für das Header-Design
